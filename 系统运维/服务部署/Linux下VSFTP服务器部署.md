@@ -83,58 +83,58 @@ nf_conntrack79453  7 nf_nat_ftp,nf_conntrack_ftp,iptable_nat,nf_nat,nf_conntrack
   配置文件每一次修改都需要重启vsftpd服务。/etc/init.d.vsftp restart
 
 - 配置文件的语法：以#开头的表示注释，对大小写敏感。格式为：参数=value
- 
+
 **常用参数配置：（可以用man vsftpd.conf查看帮助）**
 
 - 匿名用户相关的参数
 	anonymous_enable=YES|NO：是否允许匿名用户登录。
-	
+
 	anon_upload_enable=YES|NO：是否允许匿名用户上传文件。
-	
+
 	anon_mkdir_write_enable=YES|NO：是否允许匿名用户在FTP服务器上创建目录。
-	
+
 	anon_other_write_enable=YES|NO：是否允许匿名用户执行创建目录之外的写操作，如删除、重命名等。
-	
+
 	allow_anon_ssl=YES|NO：是否允许匿名用户使用SSL连接。需要ssl_enable设置为YES。
-	
+
 	anon_umask：匿名用户上传文件的umask值。
-	
+
 	anon_root：指定匿名用户登录时会被引导到的家目录。默认为/var/ftp
-	
+
 	anon_max_rate：匿名用户的最大传输速率。单位是bytes/s
-	
+
 	chown_uploads=YES|NO：是否改变匿名用户上传文件的拥有者。
-	
+
 	chown_username=who：将匿名用户上传文件的拥有者改为who。当然需要允许匿名用户（anonymous_enable=YES）以及允许匿名用户上传（anon_upload_enable=YES）.
 
 
 - 本地用户相关的参数
 	local_enable=YES|NO：是否允许本地用户登录。
-	
+
 	local_root：指定非匿名用户登录时会引导到的目录。
-	
+
 	local_max_rate：本地用户的最大传输速率。单位是bytes/s
-	
+
 	write_enable=YES|NO：是否允许非匿名用户上传文件。
-	
+
 	download_enable=YES|NO：是否允许用户下载文件。
-	
+
 	local_umask：本地用户上传文件的umask值，如local_umask=022，则到服务器上查看该文件的权限为777-022或者是666-022。
 
 - 用户权限控制相关的参数
 	userlist_file：指定存放被允许或禁止登录的用户列表文件，默认为/etc/vsftpd/user_list。
-	
+
 	userlist_enable=YES|NO：是否启用userlist_file的功能。当为YES时，在userlist_file文件中指定的用户尝试登录系统时，在输入密码之前就被拒绝登录了。
-	
+
 	userlist_deny=YES|NO：当为yes时，表示拒绝userlist_file文件中的用户登录，当为no时则表示允许该文件中的用户登录。默认值为YES。
 	注意：ftpusers文件和user_list文件都可以用来限制不能登录ftp服务器的用户，ftpusers这个文件中的用户是不允许登录的，一般不进行修改，而user_list中文件默认也是不允许登录的，可以控制能否登录。如果在ftpusers和user_list中都存在用户，一个不允许，一个允许，以ftpusers文件优先。
 
 
 - chroot相关的参数
 	chroot_local_user=YES|NO：本地用户是否被chroot，限制在自己的家目录里面。yes表示本地用户会被chroot到自己的家目录里面，no表示本地用户不会被chroot到自己的家目录里面。默认为NO
-	
+
 	chroot_list_file：指定chroot file的文件名。
-	
+
 	chroot_list_enable=YES|NO：是否启用chroot_list_file的功能。当chroot_local_user=YES时，且chroot_list_enable也为yes时，表示chroot_list_file里面所指定的用户不会被chroot。当该选项为no时，则会被chroot到自己的家目录。默认为NO。
 
 	chroot通常设置为如下方式。第一二两条不用修改，第三条chroot_local_user如果为YES，则chroot_list文件里面的用户不会被chroot，如果为NO，则在该文件里面的用户会被chroot。
@@ -144,20 +144,20 @@ nf_conntrack79453  7 nf_nat_ftp,nf_conntrack_ftp,iptable_nat,nf_nat,nf_conntrack
 
 - ASCII和超时相关的参数
 	ascii_upload_enable=YES|NO：上传文件时是否允许使用ascii传输模式
-	
+
 	ascii_download_enable=YES|NO：下载文件时是否允许使用ascii传输模式。
-	
+
 	idle_session_timeout：指定会话超时时间。客户端连接到了FTP服务器，但是未操作。单位为秒。
-	
+
 	data_connection_timeout：指定数据传输超时时间，单位为秒。
-	
+
 	deny_file：不允许上传的文件类型。如deny_file={*.exe,*.dll}
-	
+
 	pam_service_name=vsftpd：指定vsftpd使用的pam模块的配置文件名称。该配置文件默认在/etc/pam.d目录下。
 
 默认的/etc/pam.d/vsftpd的内容如下：
 ```bash
-[root@server1 vsftpd]# more /etc/pam.d/vsftpd 
+[root@server1 vsftpd]# more /etc/pam.d/vsftpd
 #%PAM-1.0
 session    optional     pam_keyinit.so    force revoke
 auth       required     pam_listfile.so item=user  sense=deny  file=/etc/vsftpd/ftpusers onerr=succeed
@@ -174,54 +174,54 @@ file：指定文件名
 
 - 其他相关参数的配置
 	listen_address：指定vsftpd服务器监听的地址
-	
+
 	listen_port：指定vsftpd服务器的监听端口。默认为21端口
-	
+
 	max_clients：vsftpd允许的最大连接数。
-	
+
 	max_per_ip：vsftpd允许同一个ip的最大连接数。
-	
+
 	use_localtime=YES|NO:是否在显示目录列表时使用本地时间。
-	
+
 	ftp_banner：登录到FTP服务器时的欢迎信息。
-	
+
 	banner_file：banner信息存放的位置。
-	
+
 	dirmessage_enable=YES|NO:当用户首次切换到某一个目录时，会显示该目录下的.message里面的内容。
-	
+
 	banner_fail:当用户连接失败时，显示该文件里面的内容。如banner_fail=/etc/vsftpd/errorinfo。该参数可以用在vsftpd由xinetd管理的时候，可用。
-	
+
 	xferlog_enable=YES|NO：是否允许用户上传或下载文件时记录日志。
-	
+
 	xferlog_file：指定存放上传或下载信息的日志文件名。
-	
+
 	xferlog_std_format=YES|NO：是否使用标准格式记录日志。YES表示使用xferlog_file，NO使用vsftpd_log_file
-	
+
 	nopriv_user：指定vsftpd服务的运行账户，默认为ftp。
-	
+
 	connect_from_port_20=YES|NO:是否使用20端口传输数据。
-	
+
 	pasv_min_port和pasv_max_port：设置用于被动模式下，服务器所启用的用于数据传输的端口范围。
-	
+
 	delete_failed_uploads：当上传文件失败时，删除失败的文件。
-	
+
 	pasv_enable：是否允许pasv模式。默认为yes
-	
+
 	port_enable：是否允许主动模式，默认为yes
-	
+
 	listen=YES：开启ipv4的支持
-	
+
 	tcp_wrappers=YES|NO：是否允许tcp_wrappers管理。
-	
+
 	connect_timeout：在主动模式下，客户端连接服务器的端口时的最大超时时间。默认为60s
 
 - 虚拟用户相关的参数
 	guest_enable=YES:允许虚拟用户登录
-	
+
 	guest_username=vuser：指定虚拟用户映射的本地用户，这里为vuser用户。
-	
+
 	virtual_use_local_privs=YES：虚拟用户使用本地用户权限。设置为YES时，虚拟用户使用与本地用户相同权限，设置为NO时，虚拟用户使用与匿名用户相同权限(必须开启)，如果为YES，则创建文件时的权限依赖于local_umask，如果为NO，则依赖于anon_umask，该值默认为077.
-	
+
 	pasv_address：指定使用被动模式时使用的回复客户端的IP地址。默认是listen_address指定的地址。
 
 
@@ -238,7 +238,7 @@ file：指定文件名
 	force_anon_data_ssl=NO：匿名用户的数据传输不支持SSL
 	force_anon_logins_ssl=NO：匿名用户的登录不使用SSL
 	ssl_ciphers=HIGH
-	
+
 
 
 
@@ -263,19 +263,19 @@ uploads是文件上传的目录。
         └── uploads
 
 5 directories, 0 files
-[root@control ~]# 
+[root@control ~]#
 
 修改匿名用户上传目录的权限：
 [root@control ~]# chmod 757 /data/ftp/anonymous/uploads
 [root@control ~]# ls -ld /data/ftp/anonymous/uploads
 drwxr-xrwx 2 root root 4096 May 27 08:49 /data/ftp/anonymous/uploads
-[root@control ~]# 
+[root@control ~]#
 
 修改本地用户上传目录的权限：
 [root@control vsftpd]# chmod 757 /data/ftp/vusers/uploads
 [root@control vsftpd]# ls -ld /data/ftp/vusers/uploads
 drwxr-xrwx 3 root root 4096 May 27 09:54 /data/ftp/vusers/uploads
-[root@control vsftpd]# 
+[root@control vsftpd]#
 
 
 chroot的设置规则是ftptest01会被chroot，ftptest02不会被chroot.
@@ -328,7 +328,7 @@ listen=YES
 pam_service_name=vsftpd
 userlist_enable=YES
 tcp_wrappers=YES
-[root@control vsftpd]# 
+[root@control vsftpd]#
 
 ```
 
@@ -337,7 +337,7 @@ tcp_wrappers=YES
 [root@control ~]# /etc/init.d/vsftpd restart
 Shutting down vsftpd:                                      [  OK  ]
 Starting vsftpd for vsftpd:                                [  OK  ]
-[root@control ~]# 
+[root@control ~]#
 ```
 
 - **匿名用户上传文件、删除文件、创建目录等操作**
@@ -345,7 +345,7 @@ Starting vsftpd for vsftpd:                                [  OK  ]
 ```bash
 # 登录ftp服务器
 [root@vm1 ~]# lftp anonymous@ftp.test.com
-Password: 
+Password:
 lftp anonymous@ftp.test.com:~> dir   
 drwxr-xrwx    2 0        0            4096 May 27 01:14 uploads
 lftp anonymous@ftp.test.com:/> cd uploads/
@@ -384,14 +384,14 @@ rmdir ok, `test_rename/' removed
 lftp anonymous@ftp.test.com:/uploads> dir
 -rw-rw-r--    1 14       50            158 May 27 01:15 hosts
 drwxrwxr-x    2 14       50           4096 May 27 01:14 test1
-lftp anonymous@ftp.test.com:/uploads> 
+lftp anonymous@ftp.test.com:/uploads>
 
 #删除文件hosts
-lftp anonymous@ftp.test.com:/uploads> rm hosts 
+lftp anonymous@ftp.test.com:/uploads> rm hosts
 rm ok, `hosts' removed
 lftp anonymous@ftp.test.com:/uploads> dir
 drwxrwxr-x    2 14       50           4096 May 27 01:14 test1
-lftp anonymous@ftp.test.com:/uploads> 
+lftp anonymous@ftp.test.com:/uploads>
 
 ```
 
@@ -400,14 +400,14 @@ lftp anonymous@ftp.test.com:/uploads>
 ```bash
 #创建本地用户并设置密码
 [root@control ~]# useradd -s /sbin/nologin ftptest01
-[root@control ~]# useradd -s /sbin/nologin ftptest02 
+[root@control ~]# useradd -s /sbin/nologin ftptest02
 [root@control ~]# echo 'ftptest01' | passwd --stdin ftptest01
 Changing password for user ftptest01.
 passwd: all authentication tokens updated successfully.
 [root@control ~]# echo 'ftptest02' | passwd --stdin ftptest02
 Changing password for user ftptest02.
 passwd: all authentication tokens updated successfully.
-[root@control ~]# 
+[root@control ~]#
 
 
 #备份user_list文件，并添加ftptest01和ftptest02用户，也要添加anonymous，否则匿名用户无法登录
@@ -419,12 +419,12 @@ passwd: all authentication tokens updated successfully.
 anonymous
 ftptest01
 ftptest02
-[root@control vsftpd]# 
+[root@control vsftpd]#
 
 #chroot_list文件内容
-[root@control vsftpd]# cat chroot_list 
+[root@control vsftpd]# cat chroot_list
 ftptest01
-[root@control vsftpd]# 
+[root@control vsftpd]#
 
 
 #登录并测试
@@ -439,7 +439,7 @@ lftp ftptest01@ftp.test.com:/uploads/ftptest01> put /etc/hosts
 158 bytes transferred
 lftp ftptest01@ftp.test.com:/uploads/ftptest01> dir
 -rw-r--r--    1 502      502           158 May 27 01:59 hosts
-lftp ftptest01@ftp.test.com:/uploads/ftptest01> 
+lftp ftptest01@ftp.test.com:/uploads/ftptest01>
 
 
 测试chroot：
@@ -448,9 +448,9 @@ lftp ftptest01@ftp.test.com:~> dir
 drwxr-xrwx    3 0        0            4096 May 27 01:59 uploads
 lftp ftptest01@ftp.test.com:/> cd /tmp
 cd: Access failed: 550 Failed to change directory. (/tmp)
-lftp ftptest01@ftp.test.com:/> 
+lftp ftptest01@ftp.test.com:/>
 lftp ftptest01@ftp.test.com:/> exit
-[root@vm1 ~]# 
+[root@vm1 ~]#
 [root@vm1 ~]# lftp ftptest02:ftptest02@ftp.test.com
 lftp ftptest02@ftp.test.com:~> dir
 drwxr-xrwx    3 0        0            4096 May 27 01:59 uploads
@@ -459,7 +459,7 @@ lftp ftptest02@ftp.test.com:/tmp> dir
 drwxr-xr-x    3 0        0            4096 May 23 05:31 pear
 -rw-r--r--    1 0        0              34 May 25 03:44 test
 -rw-------    1 0        0             212 May 24 23:45 yum_save_tx-2016-05-25-07-456R7YPG.yumtx
-lftp ftptest02@ftp.test.com:/tmp> 
+lftp ftptest02@ftp.test.com:/tmp>
 
 ```
 
@@ -476,38 +476,38 @@ lftp ftptest02@ftp.test.com:/tmp>
 [root@control vsftpd]# echo 'vuser' | passwd --stdin vuser
 Changing password for user vuser.
 passwd: all authentication tokens updated successfully.
-[root@control vsftpd]# 
+[root@control vsftpd]#
 
- 
+
 步骤3：修改vsftpd.conf，允许虚拟用户登录
 guest_enable=YES:允许虚拟用户登录
 guest_username=vuser：指定虚拟用户映射的本地用户，这里为vuser用户。
 virtual_use_local_privs=YES：让虚拟用户具有本地用户的权限。
- 
+
 步骤4： 创建一个文件，用于保存用户名和密码，该文件中的用户为虚拟用户。格式为:
 username1
 username1’s password
 username2
 username’s  password
 ……
- 
+
 [root@control vsftpd]# touch vuserdb
-[root@control vsftpd]# vim vuserdb 
+[root@control vsftpd]# vim vuserdb
 [root@control vsftpd]# cat vuserdb
 ftpvuser01
 ftpvuser01
 ftpvuser02
 ftpvuser02
-[root@control vsftpd]# 
+[root@control vsftpd]#
 
-  
+
 步骤5：将该文件转换为数据库
 指令：db_load -T -t hash  -f  <虚拟用户文件的位置>  <虚拟数据库文件的位置>
 
 [root@control vsftpd]# db_load -T -t hash -f vuserdb vuserdb.db
-[root@control vsftpd]# 
+[root@control vsftpd]#
 注：数据库文件的名称得加上一个扩展名，否则用户无法登陆。在pam文件中，不需要加扩展名。
- 
+
 步骤6：在/etc/pam.d/目录下创建一个文件，内容如下
 32位系统：
 auth required /lib/security/pam_userdb.so  db=/etc/vsftpd/vuserdb
@@ -520,15 +520,15 @@ account required /lib64/security/pam_userdb.so  db=/etc/vsftpd/vuserdb
 [root@control vsftpd]# cat /etc/pam.d/vsftpd_vuserfile
 auth required /lib64/security/pam_userdb.so  db=/etc/vsftpd/vuserdb
 account required /lib64/security/pam_userdb.so  db=/etc/vsftpd/vuserdb
-[root@control vsftpd]# 
+[root@control vsftpd]#
 
 
 步骤7：修改pam服务名
 pam_service_name=vsftp_virtuser
 如果是直接在原有的PAM模块vsftpd的基础上修改的话，则这一步可以省略，如果不是，则这一步要进行修改，并将原来的pam_service_name=vsftpd注释掉  
- 
-步骤9：添加user_list文件（如果需要） 
-需要将所有的虚拟用户添加到该文件中（如果user_list文件中的用户是只允许指定的用户登录） 
+
+步骤9：添加user_list文件（如果需要）
+需要将所有的虚拟用户添加到该文件中（如果user_list文件中的用户是只允许指定的用户登录）
 [root@control vsftpd]# cat user_list
 anonymous
 ftptest01
@@ -536,16 +536,16 @@ ftptest02
 
 ftpvuser01
 ftpvuser02
-[root@control vsftpd]# 
+[root@control vsftpd]#
 
 步骤9：重启服务
 [root@control vsftpd]# /etc/init.d/vsftpd restart
 Shutting down vsftpd:                                      [  OK  ]
 Starting vsftpd for vsftpd:                                [  OK  ]
-[root@control vsftpd]# 
- 
- 
-步骤10：虚拟用户登录测试 
+[root@control vsftpd]#
+
+
+步骤10：虚拟用户登录测试
 [root@vm1 ~]# lftp ftpvuser01:ftpvuser01@ftp.test.com
 lftp ftpvuser01@ftp.test.com:~> dir
 drwxr-xrwx    3 0        0            4096 May 27 03:24 uploads
@@ -563,7 +563,7 @@ lftp ftpvuser01@ftp.test.com:/uploads/ftpvuser01> put /etc/hosts
 158 bytes transferred
 lftp ftpvuser01@ftp.test.com:/uploads/ftpvuser01> dir
 -rw-r--r--    1 504      504           158 May 27 03:24 hosts
-lftp ftpvuser01@ftp.test.com:/uploads/ftpvuser01> 
+lftp ftpvuser01@ftp.test.com:/uploads/ftpvuser01>
 
 ```
 
@@ -578,16 +578,16 @@ lftp ftpvuser01@ftp.test.com:/uploads/ftpvuser01>
 Starting mysqld:                                           [  OK  ]
 [root@control ~]# chkconfig mysqld on
 
- 
+
 步骤2：修改MySQL的密码，如果采用的是其他的rpm包安装，则初始密码存放在/root/.mysql_secret中
 [root@control ~]# mysqladmin -u root -h localhost password 'mysql' -p
-Enter password: 
-[root@control ~]# 
+Enter password:
+[root@control ~]#
 
 修改密码：
 mysqladmin -u <username> -h <hostname|hostip> password 'new-password' -p
 说明：-u指定要修改的用户名  -h指定主机名或IP地址  -p 指定旧密码。
- 
+
 步骤3：登录数据库，创建数据库、表以及虚拟用户并授权
 mysql> create database vsftp;
 Query OK, 1 row affected (0.05 sec)
@@ -608,7 +608,7 @@ Query OK, 1 row affected (0.00 sec)
 mysql> insert into vuser (username,password) values ('ftpmysqlvuser02',password('ftpmysqlvuser02'));
 Query OK, 1 row affected (0.00 sec)
 
-mysql> 
+mysql>
 
 
 mysql> select * from vuser;
@@ -620,21 +620,21 @@ mysql> select * from vuser;
 +-----------------+-------------------------------------------+
 2 rows in set (0.00 sec)
 
-mysql> 
+mysql>
 
- 
+
 mysql> grant select on vsftp.vuser to 'vsftp'@'localhost' identified by 'ftpvuser';
 Query OK, 0 rows affected (0.00 sec)
 
 mysql> flush privileges;
 Query OK, 0 rows affected (0.00 sec)
 
-mysql> 
+mysql>
 
 
 步骤4：测试该用户是否可以登录
 [root@control ~]# mysql -u vsftp -h localhost -p
-Enter password: 
+Enter password:
 Welcome to the MySQL monitor.  Commands end with ; or \g.
 Your MySQL connection id is 8
 Server version: 5.1.71 Source distribution
@@ -656,9 +656,9 @@ mysql> show databases;
 +--------------------+
 2 rows in set (0.00 sec)
 
-mysql> 
+mysql>
 
- 
+
 可以正常登录OK……
 
 步骤5：创建本地映射用户，并修改其家目录权限
@@ -666,28 +666,28 @@ mysql>
 [root@control ~]# echo 'vuser' | passwd --stdin vuser
 Changing password for user vuser.
 passwd: all authentication tokens updated successfully.
-[root@control ~]# 
+[root@control ~]#
 
- 
+
 步骤6：修改vsftpd.conf，允许虚拟用户登录
 guest_enable=YES:允许虚拟用户登录
 guest_username=vuser：指定虚拟用户映射的本地用户，这里为vuser用户。
 virtual_use_local_privs=YES：让虚拟用户具有本地用户的权限。
- 
+
 步骤7：安装基于PAM认证的MySQL模块（pam_mysql-0.7RC1.tar.gz）
 [root@control opt]# yum install -y pam-devel mysql-devel
-[root@control opt]# tar -zxvf pam_mysql-0.7RC1.tar.gz 
+[root@control opt]# tar -zxvf pam_mysql-0.7RC1.tar.gz
 [root@control opt]# cd pam_mysql-0.7RC1
 [root@control pam_mysql-0.7RC1]# ./configure && make && make install
 
- 
+
 步骤8：在/etc/pam.d目录下创建PAM认证模块
 [root@control ~]# cat /etc/pam.d/vsftpd_vusermysql
 auth required /lib/security/pam_mysql.so user=vsftp passwd=ftpvuser host=localhost \
                                         db=vsftp table=vuser usercolumn=username passwdcolumn=password crypt=2
 account required /lib/security/pam_mysql.so user=vsftp passwd=ftpvuser host=localhost \
                                         db=vsftp table=vuser usercolumn=username passwdcolumn=password crypt=2
-[root@control ~]# 
+[root@control ~]#
 
 
 说明：
@@ -700,7 +700,7 @@ table：存放虚拟用户的表名称
 usercolumn：指定存放用户名的字段。
 passwdcolumn：指定存放密码的字段。
 crypt：指定密码字段是以什么方式存储在数据库中的。crypt=0，则表示以明文的方式保存的，crypt=1则表示crypt()函数加密保存密码，crypt=2则表示以password()函数加密保存密码，crypt=3则表示以md5的方式保存密码的。
- 
+
 步骤9：修改vsftpd.conf，指定pam_service_name
 pam_service_name=vsftpd_vusermysql
 
@@ -715,9 +715,9 @@ ftpvuser02
 
 ftpmysqlvuser01
 ftpmysqlvuser02
-[root@control vsftpd]# 
- 
-步骤11：重启vsftpd服务，并测试 
+[root@control vsftpd]#
+
+步骤11：重启vsftpd服务，并测试
 [root@vm1 ~]# lftp ftpmysqlvuser01:ftpmysqlvuser01@ftp.test.com
 lftp ftpmysqlvuser01@ftp.test.com:~> dir
 drwxr-xrwx    4 0        0            4096 May 27 03:24 uploads
@@ -732,7 +732,7 @@ lftp ftpmysqlvuser01@ftp.test.com:/uploads/ftpvusermysql01> put /etc/hosts
 158 bytes transferred                             
 lftp ftpmysqlvuser01@ftp.test.com:/uploads/ftpvusermysql01> dir
 -rw-r--r--    1 504      504           158 May 27 05:01 hosts
-lftp ftpmysqlvuser01@ftp.test.com:/uploads/ftpvusermysql01> 
+lftp ftpmysqlvuser01@ftp.test.com:/uploads/ftpvusermysql01>
 
 注意事项：
 1. 在使用MySQL对数据加密时，使用password函数加密，因为pam_mysql好像不支持md5。没测试成功。
@@ -751,7 +751,7 @@ make vsftpd.pem，这个文件必须以.pem结尾。
 
 ```bash
 [root@control vsftpd]# cd /etc/pki/tls/certs/
-[root@control certs]# 
+[root@control certs]#
 [root@control certs]# make vsftpd.pem
 umask 77 ; \
 	PEM1=`/bin/mktemp /tmp/openssl.XXXXXX` ; \
@@ -776,7 +776,7 @@ If you enter '.', the field will be left blank.
 Country Name (2 letter code) [XX]:CN
 State or Province Name (full name) []:Beijing
 Locality Name (eg, city) [Default City]:Beijing
-Organization Name (eg, company) [Default Company Ltd]:test 
+Organization Name (eg, company) [Default Company Ltd]:test
 Organizational Unit Name (eg, section) []:test
 Common Name (eg, your name or your server's hostname) []:ftp.test.com
 Email Address []:test@test.com
@@ -784,7 +784,7 @@ Email Address []:test@test.com
 
 [root@control certs]# mv vsftpd.pem /etc/vsftpd/
 [root@control certs]# cd /etc/vsftpd/
-[root@control vsftpd]# 
+[root@control vsftpd]#
 
 ```
 
@@ -825,3 +825,6 @@ Filezilla最新版本认为vsftpd默认的加密算法"DES-CBC3-SHA"不够安全
 ## FTPS跨iptables NAT时无法访问
 
 增加pasv_address，地址为公网地址，外部用户使用被动模式，内部用户使用主动模式即可。
+
+## 新版的vsftp当启用chroot时，根目录不允许有w权限。
+解决方法：allow_writeable_chroot=YES
