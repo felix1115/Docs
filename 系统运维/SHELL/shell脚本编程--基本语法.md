@@ -57,23 +57,27 @@ felix
 ```
 
 ## 查看变量的内容。格式： echo $variable 或 echo ${variable}
+```bash
 [root@vm10 ~]# echo $a
 framE
 [root@vm10 ~]# echo ${a}
 framE
 [root@vm10 ~]#
-
+```
 ## 变量的首字母大写。格式：echo ${variable^}
+```bash
 [root@vm10 ~]# echo ${a^}
 FramE
 [root@vm10 ~]#
-
+```
 ## 变量的所有字母大写。格式：echo ${variable^^}
+```bash
 [root@vm10 ~]# echo ${a^^}
 FRAME
 [root@vm10 ~]#
-
+```
 ## 变量的首字母小写。格式：echo ${variable,}
+```bash
 [root@vm10 ~]# a=FramE
 [root@vm10 ~]# echo ${a}
 FramE
@@ -81,27 +85,30 @@ FramE
 [root@vm10 ~]# echo ${a,}
 framE
 [root@vm10 ~]#
-
+```
 ## 变量的所有字母小写。格式：echo ${variable,, }
+```bash
 [root@vm10 ~]# a=FramE
 [root@vm10 ~]# echo ${a,,}
 frame
 [root@vm10 ~]#
-
+```
 ## 变量的首字母大小写转换。格式:echo ${variable~}
+```bash
 [root@vm10 ~]# echo ${a}
 FramE
 [root@vm10 ~]# echo ${a~}
 framE
 [root@vm10 ~]#
-
+```
 ## 变量的所有字母大小写转换。格式：echo ${variable~~}
+```bash
 [root@vm10 ~]# echo ${a}
 FramE
 [root@vm10 ~]# echo ${a~~}
 fRAMe
 [root@vm10 ~]#
-
+```
 ## 总结
 
 ^：首字母大写
