@@ -371,6 +371,31 @@ else
 fi
 ```
 
+## 组合条件
+```text
+-a：逻辑与
+-o：逻辑或
+!：非
+```
+
+# case
+```text
+case 值 in
+value1)
+    statement1
+    ;;
+value2)
+    statement2
+    ;;
+...
+
+*)
+    statementN
+    ;;
+esac
+
+```
+
 # 循环
 ## for循环
 ### 语法1
@@ -409,6 +434,24 @@ do
     ……
 done
 说明：while是当CONDITION成立的时候就执行循环，当条件不成立时，退出循环。
+```
+
+```text
+while死循环的方式
+
+方法1：
+while true
+do
+    statement
+    ...
+done
+
+方法2：
+while :
+do
+    statement
+    ...
+done
 ```
 
 
@@ -455,20 +498,3 @@ function-name
 number表示0-255.
 ```
 
-# case
-```text
-case 值 in
-value1)
-    statement1
-    ;;
-value2)
-    statement2
-    ;;
-...
-
-*)
-    statementN
-    ;;
-esac
-
-```
