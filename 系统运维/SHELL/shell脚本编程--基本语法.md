@@ -30,7 +30,7 @@ felix
 
 
 ## 让变量在子shell也有效。格式：export 变量名=变量值。这种方式定义的变量为环境变量，作用域为当前shell及子shell。
-```bash
+
 [root@vm10 tmp]# name=felix
 [root@vm10 tmp]# echo ${name}
 felix
@@ -109,8 +109,9 @@ FramE
 fRAMe
 [root@vm10 ~]#
 ```
-## 总结
 
+## 总结
+```
 ^：首字母大写
 ^^：所有字母大写
 ,：首字母小写
