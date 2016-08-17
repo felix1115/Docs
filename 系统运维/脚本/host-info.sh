@@ -18,6 +18,15 @@ CFAILURE="$CRED"
 # 检测当前用户是否为root
 [ $(id -u) != "0" ] && { echo "${CFAILURE}Error: You must be root user to run this script${CEND}"; exit 1; }
 
+# 判断用户是否有安装dmidecode软件
+if ! $(which dmidecode &> /dev/null); then
+    echo
+    echo "${CFAILURE}Error: Please install dmidecode package.${CEND}"
+    echo "${CGREEN}Command: yum install -y dmidecode${CEND}"
+    echo
+    exit 2
+fi
+
 # 定义脚本需要使用的文件
 ISSUE=/etc/issue
 RELEASE=/etc/redhat-release
@@ -113,9 +122,11 @@ function Platform() {
 }
 
 function Memory() {
-    local totalMemoryKB
-    totalMemoryKB=$(cat $MEMORYINFO | grep 'MemTotal' | awk -F':' '{print $2}' | awk '{print $1}')
-    let totalMemoryMB=$totalMemoryKB/1024
+    local enabledMemory=$(dmidecode --type memory | grep 'Enabled Size' | grep -v 'Not' | awk -F':' '{print $2}' | awk '{print $1,$2}' | awk '{print $1}')
+    for memory in $(echo $enabledMemory)
+    do
+        let totalMemoryMB+=$memory
+    done
     totalMemoryMB="$totalMemoryMB MB"
 }
 
