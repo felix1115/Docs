@@ -502,6 +502,15 @@ done
 说明：while是当CONDITION成立的时候就执行循环，当条件不成立时，退出循环。
 ```
 
+```
+把while循环中的变量传出来的方法：
+
+$ total_num=1
+$ while read line;do ((total_num++));done < /etc/passwd
+$ echo $total_num
+40
+```
+
 ```text
 while死循环的方式
 

@@ -8,7 +8,7 @@ LOCK_TIME=60
 MAX_FAIL_COUNT=9
 
 # 检测时间间隔，单位为秒
-MONITOR_INTVAL=5
+MONITOR_INTERVAL=5
 
 CURRENTDIR=$(dirname $0) 
 DENY_FILE='/etc/hosts.deny'
@@ -101,5 +101,5 @@ function check_ssh_login() {
 while :
 do
     check_ssh_login
-    sleep $MONITOR_INTVAL
+    sleep $MONITOR_INTERVAL
 done
