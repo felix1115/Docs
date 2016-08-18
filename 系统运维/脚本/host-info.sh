@@ -18,13 +18,19 @@ CFAILURE="$CRED"
 # 检测当前用户是否为root
 [ $(id -u) != "0" ] && { echo "${CFAILURE}Error: You must be root user to run this script${CEND}"; exit 1; }
 
-# 判断用户是否有安装dmidecode软件
+# 判断用户是否有安装dmidecode和ifconfig软件
 if ! $(which dmidecode &> /dev/null); then
     echo
     echo "${CFAILURE}Error: Please install dmidecode package.${CEND}"
     echo "${CGREEN}Command: yum install -y dmidecode${CEND}"
     echo
     exit 2
+elif ! $(which ifconfig &> /dev/null); then
+    echo
+    echo "${CFAILURE}Error: Please install ifconfig package.${CEND}"
+    echo "${CGREEN}Command: yum install -y net-tools${CEND}"
+    echo
+    exit 3
 fi
 
 # 定义脚本需要使用的文件
