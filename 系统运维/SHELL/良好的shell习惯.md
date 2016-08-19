@@ -30,7 +30,6 @@ printf "
 # 定义颜色输出
 ```
 CSI=$(echo -e "\033[")
-CEND="${CSI}0m"
 CDGREEN="${CSI}32m"
 CRED="${CSI}1;31m"
 CGREEN="${CSI}1;32m"
@@ -43,6 +42,7 @@ CFAILURE="$CRED"
 CQUESTION="$CMAGENTA"
 CWARNING="$CYELLOW"
 CMSG="$CCYAN"
+CEND="${CSI}0m"
 
 
 使用上述定义的颜色的方法：

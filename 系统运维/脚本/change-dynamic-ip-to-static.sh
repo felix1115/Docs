@@ -215,7 +215,7 @@ function AssignNewIp() {
     fi
 }
 
-function PxeMachine() {
+function DhcpMachine() {
     SystemVersion
     Network
     Dns
@@ -238,14 +238,14 @@ function ChangInfo() {
 
 function Usage() {
     echo
-    echo "${CWARNING}Usage: $0 --pxe | --change <interface_name>${CEND}"
+    echo "${CWARNING}Usage: $0 --dhcp | --change <interface_name>${CEND}"
     echo
 }
 
 if [ $# -eq 0 ] || [ $# -gt 2 ];then
     Usage
-elif [ $# == 1 ] && [ $1 == '--pxe' ]; then
-    PxeMachine
+elif [ $# == 1 ] && [ $1 == '--dhcp' ]; then
+    DhcpMachine
 elif [ $# -eq 2 ] && [ $1 == '--change' ] && [ -n $2 ]; then
     ChangInfo $2
 else

@@ -298,6 +298,96 @@ ${var:=string}：当变量var没有定义或者为空时，则将string的内容
 
 ```
 
+# SHELL数组
+```
+1. 数组定义
+方式1：用一对小括号定义数组。
+[root@vm10 ~]# a=(1 2 3 4 5)
+说明：一对小括号表示数组，数组中的元素用空格隔开。
+
+方式2：使用中括号加上数组下标定义数组。
+[root@vm10 ~]# b[0]=1
+[root@vm10 ~]# b[1]=2
+[root@vm10 ~]# 
+
+2. 数组长度。${#variable[@]}或者是${#variable[*]}
+[root@vm10 ~]# echo ${#b[@]}
+2
+[root@vm10 ~]# 
+
+3. 数组里面的所有元素。${variable[*]}或者是${variable[@]}
+[root@vm10 ~]# echo ${b[*]}
+1 2
+[root@vm10 ~]# echo ${a[*]}
+1 2 3 4 5
+[root@vm10 ~]# 
+
+4. 访问数组中的某个元素。${variable[index]}
+[root@vm10 ~]# echo ${a[2]}
+3
+[root@vm10 ~]# echo ${a[1]}
+2
+[root@vm10 ~]# 
+
+5. 修改数组中的某个元素。variable[index]=value
+[root@vm10 ~]# a[1]=10
+[root@vm10 ~]# echo ${a[1]}
+10
+[root@vm10 ~]# echo ${a[*]}
+1 10 3 4 5
+[root@vm10 ~]# 
+
+6. 添加元素。
+[root@vm10 ~]# a[$(echo ${#a[@]})]=3
+[root@vm10 ~]# echo ${a[@]}
+1 2 3 4 5 6 7 3
+[root@vm10 ~]#
+说明：$(echo ${#a[@]})获取数组的长度
+
+6. 删除数组中的某个元素。unset variable[index]
+[root@vm10 ~]# echo ${a[*]}
+1 10 3 4 5
+[root@vm10 ~]# unset a[3]
+[root@vm10 ~]# echo ${a[*]}
+1 10 3 5
+[root@vm10 ~]# 
+
+7. 切片。${variable[@]:start:length}
+[root@vm10 ~]# a=(1 2 3 4 5 6 7)
+[root@vm10 ~]# echo ${a[*]}
+1 2 3 4 5 6 7
+[root@vm10 ~]# echo ${a[@]:0:3}
+1 2 3
+[root@vm10 ~]# echo ${a[@]:1}
+2 3 4 5 6 7
+[root@vm10 ~]# 
+[root@vm10 ~]# echo ${a[@]::2}
+1 2
+[root@vm10 ~]# 
+说明：start表示开始索引，如果省略，则从0开始。length为截取的长度，如果省略，则取到最后一个元素。返回的是一个空字符串，如果是用()括起来，则返回的是一个切片数组。
+[root@vm10 ~]# b=(${a[@]:0:3})
+[root@vm10 ~]# echo ${b[@]}
+1 2 3
+[root@vm10 ~]# 
+
+8. 不修改原数组进行替换。${variable[@]/src/dest}，将所有的src替换成dest
+[root@vm10 ~]# echo ${a[@]}
+1 2 3 4 5 6 7 3 3
+[root@vm10 ~]# echo ${a[@]/3/30}
+1 2 30 4 5 6 7 30 30
+[root@vm10 ~]# echo ${a[@]}
+1 2 3 4 5 6 7 3 3
+[root@vm10 ~]# 
+
+说明：这种替换是不会修改原数组内容的。
+
+9. 修改原数组进行替换。variable=(${variable[@]/src/dest})
+[root@vm10 ~]# a=(${a[@]/3/30})
+[root@vm10 ~]# echo ${a[@]}
+1 2 30 4 5 6 7 30 30
+[root@vm10 ~]# 
+
+```
 
 # 条件测试
 ## 条件测试方法
