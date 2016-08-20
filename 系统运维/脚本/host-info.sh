@@ -10,10 +10,10 @@ export LANG=en_US.UTF-8
 
 # 定义输出颜色
 CSI=$(echo -e "\033[")
-CEND="${CSI}0m"
 CRED="${CSI}1;31m"
 CGREEN="${CSI}1;32m"
 CFAILURE="$CRED"
+CEND="${CSI}0m"
 
 # 检测当前用户是否为root
 [ $(id -u) != "0" ] && { echo "${CFAILURE}Error: You must be root user to run this script${CEND}"; exit 1; }
@@ -155,7 +155,8 @@ function DiskInfo() {
     while read item
     do
         diskName=$(echo $item | awk '{print $2}' | awk -F':' '{print $1}' |  awk -F'/' '{print $3}')
-        diskSize=$(echo $item | awk '{print $3,$4}' | awk -F',' '{print $1}')
+        #diskSize=$(echo $item | awk '{print $3,$4}' | awk -F',' '{print $1}')
+        diskSize=$(($(cat /sys/block/$diskName/size)/2/1024/1024))
         if [ $diskInitNumber -eq 1 ]; then
             diskInfo="$diskName $diskSize"
             diskInitNumber=2
@@ -276,11 +277,13 @@ initNumber=1
 echo $diskInfo | sed 's@:@\n@g' | while read item
 do
     if [ $initNumber -eq 1 ]; then
-        echo -e "$item\t\t\t|"
+        #echo -e "$item\t\t\t|"
+        echo -e "$item GB\t\t\t|"
         let initNumber++
     else
         echo -ne "|\t\t\t|\t"
-        echo -e "$item\t\t\t|"
+        echo -e "$item GB\t\t\t|"
+        #echo -e "$item\t\t\t|"
     fi
 done
 
@@ -293,7 +296,14 @@ do
     let initNetworkNumber++
     interface=$(echo $item | awk '{print $1}')
     ipNetmask=$(echo $item | awk '{print $2}')
-    echo -ne "|\t$interface\t\t|\t"
+    echo -ne "|\t"
+    if [ ${#interface} -lt 8 ]; then
+        echo -ne "${interface}\t\t|"
+    elif [ ${#interface} -ge 8 -a ${#interface} -lt 16 ]; then
+        echo -ne "${interface}\t|"
+	fi
+
+	echo -ne "\t"
     Length $(echo ${#ipNetmask}) $ipNetmask
 
     if [ $fileNetworkNumber -gt 1 -a $initNetworkNumber -ne $fileNetworkNumber ];then
