@@ -294,7 +294,7 @@ ${var:=string}：当变量var没有定义或者为空时，则将string的内容
 [root@vm10 tmp]# ((a--))
 [root@vm10 tmp]# echo $a
 8
-[root@vm10 tmp]# 
+[root@vm10 tmp]#
 
 ```
 
@@ -308,26 +308,26 @@ ${var:=string}：当变量var没有定义或者为空时，则将string的内容
 方式2：使用中括号加上数组下标定义数组。
 [root@vm10 ~]# b[0]=1
 [root@vm10 ~]# b[1]=2
-[root@vm10 ~]# 
+[root@vm10 ~]#
 
 2. 数组长度。${#variable[@]}或者是${#variable[*]}
 [root@vm10 ~]# echo ${#b[@]}
 2
-[root@vm10 ~]# 
+[root@vm10 ~]#
 
 3. 数组里面的所有元素。${variable[*]}或者是${variable[@]}
 [root@vm10 ~]# echo ${b[*]}
 1 2
 [root@vm10 ~]# echo ${a[*]}
 1 2 3 4 5
-[root@vm10 ~]# 
+[root@vm10 ~]#
 
 4. 访问数组中的某个元素。${variable[index]}
 [root@vm10 ~]# echo ${a[2]}
 3
 [root@vm10 ~]# echo ${a[1]}
 2
-[root@vm10 ~]# 
+[root@vm10 ~]#
 
 5. 修改数组中的某个元素。variable[index]=value
 [root@vm10 ~]# a[1]=10
@@ -335,7 +335,7 @@ ${var:=string}：当变量var没有定义或者为空时，则将string的内容
 10
 [root@vm10 ~]# echo ${a[*]}
 1 10 3 4 5
-[root@vm10 ~]# 
+[root@vm10 ~]#
 
 6. 添加元素。
 [root@vm10 ~]# a[$(echo ${#a[@]})]=3
@@ -350,7 +350,7 @@ ${var:=string}：当变量var没有定义或者为空时，则将string的内容
 [root@vm10 ~]# unset a[3]
 [root@vm10 ~]# echo ${a[*]}
 1 10 3 5
-[root@vm10 ~]# 
+[root@vm10 ~]#
 
 7. 切片。${variable[@]:start:length}
 [root@vm10 ~]# a=(1 2 3 4 5 6 7)
@@ -360,15 +360,15 @@ ${var:=string}：当变量var没有定义或者为空时，则将string的内容
 1 2 3
 [root@vm10 ~]# echo ${a[@]:1}
 2 3 4 5 6 7
-[root@vm10 ~]# 
+[root@vm10 ~]#
 [root@vm10 ~]# echo ${a[@]::2}
 1 2
-[root@vm10 ~]# 
+[root@vm10 ~]#
 说明：start表示开始索引，如果省略，则从0开始。length为截取的长度，如果省略，则取到最后一个元素。返回的是一个空字符串，如果是用()括起来，则返回的是一个切片数组。
 [root@vm10 ~]# b=(${a[@]:0:3})
 [root@vm10 ~]# echo ${b[@]}
 1 2 3
-[root@vm10 ~]# 
+[root@vm10 ~]#
 
 8. 不修改原数组进行替换。${variable[@]/src/dest}，将所有的src替换成dest
 [root@vm10 ~]# echo ${a[@]}
@@ -377,7 +377,7 @@ ${var:=string}：当变量var没有定义或者为空时，则将string的内容
 1 2 30 4 5 6 7 30 30
 [root@vm10 ~]# echo ${a[@]}
 1 2 3 4 5 6 7 3 3
-[root@vm10 ~]# 
+[root@vm10 ~]#
 
 说明：这种替换是不会修改原数组内容的。
 
@@ -385,7 +385,7 @@ ${var:=string}：当变量var没有定义或者为空时，则将string的内容
 [root@vm10 ~]# a=(${a[@]/3/30})
 [root@vm10 ~]# echo ${a[@]}
 1 2 30 4 5 6 7 30 30
-[root@vm10 ~]# 
+[root@vm10 ~]#
 
 ```
 
@@ -456,7 +456,7 @@ file1 -ot file2：file1比file2旧时返回真
 ```
 
 ```bash
-[root@vm10 tmp]# cat 1.sh 
+[root@vm10 tmp]# cat 1.sh
 #!/bin/bash
 
 DATE_FORMAT="^[0-9]{4}-[0-9]{1,2}-[0-9]{1,2}$"
@@ -467,18 +467,18 @@ if [[ $date =~ $DATE_FORMAT ]];then
 else
     echo "Invalid Date Format"
 fi
-[root@vm10 tmp]# 
+[root@vm10 tmp]#
 
-[root@vm10 tmp]# sh 1.sh 
+[root@vm10 tmp]# sh 1.sh
 Please input a date [Format: 1970-1-1]: 20161111
 Invalid Date Format
-[root@vm10 tmp]# sh 1.sh 
+[root@vm10 tmp]# sh 1.sh
 Please input a date [Format: 1970-1-1]: 2016-08-15
 Ok
-[root@vm10 tmp]# sh 1.sh 
+[root@vm10 tmp]# sh 1.sh
 Please input a date [Format: 1970-1-1]: 2016-8-15
 Ok
-[root@vm10 tmp]# sh 1.sh 
+[root@vm10 tmp]# sh 1.sh
 Please input a date [Format: 1970-1-1]: 2016-8-5
 Ok
 [root@vm10 tmp]#
@@ -664,4 +664,16 @@ function-name
 number表示0-255.
 ```
 
+# 常用的正则表达式检测
+## 检测日期和时间格式
+```
+检测日期格式：1970-01-01，月和日必须是2位
+date_match_rule="^(([[:space:]]*)([1-9][0-9]{3})-(0[1-9]|1[0-2])-(0[1-9]|2[0-9]|3[0-1])([[:space:]]*))$"
 
+检测时间格式：00:00:00或者是23:59:59，必须是2位
+tim_match_rule="^(([[:space:]]*)([0-1][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])([[:space:]]*))$"
+
+日期和时间一起检测，格式：1970-01-01 00:00:00
+datetime_match_rule="^(([[:space:]]*)([1-9][0-9]{3})-(0[1-9]|1[0-2])-(0[1-9]|2[0-9]|3[0-1])([[:space:]]{1,})([0-1][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])([[:space:]]*))$"
+
+```

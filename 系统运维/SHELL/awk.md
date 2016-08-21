@@ -3,9 +3,27 @@
 awk是一款强大的文本分析工具，awk是把要处理的文件逐行读入，以空格作为默认的输入分隔符将每行进行切片处理，然后在对切开的各个字段进行处理，处理完成后开始读取下一行接着进行处理。
 
 使用方法：
-awk 选项 'PATTERN{ACTION1[;ACTION2;...]}' filename
+awk 选项 'PATTERN{ACTION} PATTERN{ACTION} PATTERN{ACTION} ...' filename
 
-PATTERN使用的是扩展的正则表达式语法，并且GLOB也是可以使用的。
+说明：
+* awk中的PATTERN和ACTION对可以有多个。其中PATTER和ACTION只能省略其中之一。
+    如果没有指定PATTERN，则ACTION应用的所有的记录上。
+    如果没有指定ACTION，则输出所有被PATTERN匹配的整个记录
+* 如果ACTION中的statement多余一条，则以分号(;)隔开他们。
+* PATTERN使用的是扩展的正则表达式语法，并且GLOB也是可以使用的。
+
+
+PTTERN可以是如下其中之一：
+* BEGIN
+* END
+* /regular expression/
+* relational expression
+* pattern && pattern
+* pattern || pattern
+* pattern ? pattern : pattern
+* (pattern)
+* ! pattern
+* pattern, pattern
 
 1. awk将输入数据划分为记录（RS为记录分隔符变量）
 Start of File --> Record 1 --> RS --> Record 3 --> RS --> Record N --> RS --> EOF
@@ -17,12 +35,10 @@ $N：表示第N个字段。
 $NF：表示最后一个字段。
 $(NF-1)：表示倒数第2个字段。
 
-如果没有指定PATTERN，则ACTION应用的所有的记录上。
-如果没有指定ACTION，则输出所有被PATTERN匹配的记录。
-
 常用选项：
 -F：指定输入字段分隔符。默认为空格。
 -f：指定awk脚本文件的位置。
+-v variable=value：定义变量。variable为变量名称，value为变量初始值。
 
 ```
 
@@ -52,6 +68,40 @@ ORS：输出行分隔符。
 NR：当前处理的记录总数。
 NF：当前行的字段总数。
 IGNORECASE：如果为非0，则执行忽略大小写匹配。否则不执行忽略大小写。
+```
+
+# awk内置函数
+```
+index(s,t)：返回字符串t首次出现在字符串s中位置，索引从1开始。
+length(s)：返回字符串s的长度。
+
+示例1：
+[root@vm1 tmp]# awk -F: '/^root/ {print $0}' passwd
+root:x:0:0:root:/root:/bin/bash
+[root@vm1 tmp]# awk -F: '/^root/ {print length($1)}' passwd
+4
+[root@vm1 tmp]# awk -F: '/^root/ {print index($0,0)}' passwd
+8
+[root@vm1 tmp]#
+
+systime(): 返回当前时间距离1970-1-1所经过的秒数。
+示例：
+[root@vm1 tmp]# awk 'BEGIN {print systime()}'
+1469935800
+[root@vm1 tmp]#
+
+system(command): 执行shell命令。
+
+示例：
+[root@vm1 scripts]# awk 'BEGIN {system("ls -l")}'
+总用量 32
+-rw-r--r-- 1 root root     0 7月  31 12:52 check_date.sh
+-rwxr-xr-x 1 root root  2238 7月  31 14:32 date_seconds_interconvertaion.sh
+-rwxr-xr-x 1 root root  9010 7月  31 09:54 disk_tool.sh
+-rwxr-xr-x 1 root root 10162 7月  30 16:55 host-info.sh
+-rw-r--r-- 1 root root   375 7月  31 00:07 test
+[root@vm1 scripts]#
+
 ```
 
 # awk的流程控制
