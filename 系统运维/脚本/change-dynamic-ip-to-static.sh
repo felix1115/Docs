@@ -177,6 +177,7 @@ function Dns() {
 
     if [ -s $tmpFileDns ]; then
         cat $tmpFileDns > $DNSINFO
+        echo "options timeout:2 attempts:3 rotate" >> $DNSINFO
     fi
 }
 
