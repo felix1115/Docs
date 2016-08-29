@@ -42,13 +42,33 @@ $(NF-1)：表示倒数第2个字段。
 
 ```
 
+# awk printf
+```
+%c：ASCII码。以ASCII码形式显示。
+%d，%i：数字。
+%f：浮点数。
+%o：无符号八进制。
+%u：无符号十进制。
+%x，%X：无符号十六进制。
+%s：字符串。
+%%：百分号。
+
+显示方式：
+-：左对齐。默认是右对齐。
++：正数前面显示+，负数前面显示-。
+#[.#]：第一个#表示显示宽度，第二个#表示小数点后保留位数。
+
+\t：水平制表符。
+\n：换行
+```
+
 # awk运算符
 ```
 算术运算符：+、-、*、/、%、**(幂运算)
 赋值运算符：=、+=、-=、*=、/=、%=、++、--、**=
 关系运算符：>、<、==、>=、<=、!=
 逻辑运算符：||、&&、!
-匹配运算符：~表示匹配正则表达式，!~表示不匹配正则表达式。
+匹配运算符：~表示匹配PATTERN，!~表示不匹配PATTERN。
 数组成员关系操作符：in
 三目运算符：a?b:c，如表示式a为真则返回b，否则返回c。
 ```
@@ -260,5 +280,19 @@ function name(paramenter1,paramenter2,paramenter3,...) {
     statement;
     return expression;
 }
+
+```
+
+
+# 示例
+```
+1. 统计各个状态的连接数
+[root@infragw01 ~]# netstat -tunlpa | awk 'BEGIN {print "--------------------"} $(NF-1)~/TIME_WAIT|ESTABLISHED|LISTEN/ {result[$6]++} END {for (i in result) printf "%-8s\t%d\n",i,result[i]; print "--------------------"}'
+--------------------
+TIME_WAIT   1
+ESTABLISHED 3
+LISTEN      6
+--------------------
+[root@infragw01 ~]# 
 
 ```
