@@ -326,18 +326,25 @@ iptables -P INPUT DROP
 iptables -P OUTPUT ACCEPT
 iptables -P FORWARD ACCEPT
 
+设置lo和icmp策略
+iptables -A INPUT -i lo -j ACCEPT
+iptables -A INPUT -p icmp -m limit --limit-burst 10 --limit 5/s -j ACCEPT
+iptables -A INPUT -p icmp -j DROP
+
 设置state
 iptables -A INPUT -m state --state INVALID DROP
-iptables -A OUTPUT -m state --state INVALID -j DROP
-iptables -A FORWARD -m state --state INVALID -j DROP
+iptables -A OUTPUT -m state --state INVALID DROP
+iptables -A FORWARD -m state --state INVALID DROP
 iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 
-设置ICMP和SSH
-iptables -A INPUT -p icmp -j ACCEPT
+设置SSH策略
 iptables -A INPUT -i eth0 -p tcp -s 172.17.100.0/24 -d 172.17.100.1 --dport 22 -j ACCEPT 
 
 设置NAT
 DNAT：iptables -t nat -A PREROUTING -p tcp -d 172.17.100.10 --dport 80 -j DNAT --to-destination 172.17.200.100:80
 SNAT: iptables -t nat -A POSTROUTING -p tcp -s 172.17.100.0/24 -j SNAT  --to-source 172.17.100.10
+
+
+说明：如果设置了icmp的limit策略，则需要放在ESTABLISHED和RELATED状态的前面，否则limit不会起任何作用。
 
 ```

@@ -640,7 +640,7 @@ continue：终止此次循环，进行下一次循环。不会执行continue后�
 # 函数
 ## 方法1
 ```text
-function function-name() {
+function function-name {
     函数体
 }
 ```
