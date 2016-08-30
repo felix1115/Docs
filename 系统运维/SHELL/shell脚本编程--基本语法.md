@@ -638,18 +638,24 @@ continue：终止此次循环，进行下一次循环。不会执行continue后�
 ```
 
 # 函数
-## 方法1
+## 定义函数
 ```text
+方法1：
 function function-name {
+    函数体
+}
+
+方法2：
+function-name() {
     函数体
 }
 ```
 
-## 方法2：
+## 定义函数的返回值
 ```text
-function-name() {
-    函数体
-}
+return [number]:number表示0-255.
+
+当函数在执行过程中遇到return，将会退出函数，不会执行return后面的语句。
 ```
 
 ## 调用函数
@@ -657,12 +663,7 @@ function-name() {
 function-name
 ```
 
-# 退出程序和退出函数
-```text
-退出程序：exit [number]   
-退出函数：return [number]
-number表示0-255.
-```
+
 
 # 常用的正则表达式检测
 ## 检测日期和时间格式
