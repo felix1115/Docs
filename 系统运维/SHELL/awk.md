@@ -183,6 +183,21 @@ Total Users: 20
 
 ```
 
+## switch判断
+```
+{
+    switch (expression) { 
+        case VALUE or /REGEXP/: 
+            statement1;
+        case VALUE or /REGEXP/:
+            statement2;
+        ... 
+        default:
+            statement;
+    }
+}
+```
+
 ## 循环
 ```
 1. while循环
@@ -269,17 +284,21 @@ lp=4
 
 删除数组中的某个元素：delete array[index]
 删除数组：delete array
+说明：需要注意的是，如果某数据组元素事先不存在，那么在引用时，awk会自动创建此元素并初始化为空串。  
 
 ```
 
 ## 函数
 ```
-语法格式
-function name(paramenter1,paramenter2,paramenter3,...) {
+定义函数的语法格式
+function name(parameter1,parameter2,parameter3,...) {
     statement;
     statement;
     return expression;
 }
+
+调用函数
+function-name(parameter1,parameter2,...)
 
 ```
 
@@ -287,12 +306,75 @@ function name(paramenter1,paramenter2,paramenter3,...) {
 # 示例
 ```
 1. 统计各个状态的连接数
-[root@infragw01 ~]# netstat -tunlpa | awk 'BEGIN {print "--------------------"} $(NF-1)~/TIME_WAIT|ESTABLISHED|LISTEN/ {result[$6]++} END {for (i in result) printf "%-8s\t%d\n",i,result[i]; print "--------------------"}'
---------------------
-TIME_WAIT   1
-ESTABLISHED 3
-LISTEN      6
---------------------
+[root@oa01 ~]# netstat -tna | head -n -2 | awk 'NR>=3 {state[$NF]++} END {for (i in state) {printf "%-8s\t%s\n",i,state[i]}}'
+LISTEN      5
+CLOSE_WAIT  1
+ESTABLISHED 5
+TIME_WAIT   2
+[root@oa01 ~]# 
+
+[root@oa01 ~]# ss -tna4 | awk 'NR>=2 {state[$1]++} END {for(i in state) {printf "%-8s\t%s\n",i,state[i]}}'
+LISTEN      5
+CLOSE-WAIT  1
+ESTAB       6
+TIME-WAIT   2
+[root@oa01 ~]# 
+
+
+2. 格式化显示磁盘使用率大于%n的磁盘
+[root@infragw01 ~]# df -h | awk -F% '/^\/dev/ {print $1,$2}' | awk 'BEGIN {none="NONE";number=0;print "\n\tFileSystem\t\tTotalSize\tUsedSize\tAvailSize\tUsedPercent\tMountPoint";PrintLine()} function PrintLine() {print "-----------------------------------------------------------------------------------------------------------"}  {if ($(NF-1)>=50) {printf "%-24s\t%-8s\t%-8s\t%-8s\t%8s%\t%-8s\n",$1,$2,$3,$4,$5,$6;number++}} END {if (number==0) {printf "%55s\n",none;PrintLine()} else {PrintLine()}}'
+
+    FileSystem      TotalSize   UsedSize    AvailSize   UsedPercent MountPoint
+-----------------------------------------------------------------------------------------------------------
+/dev/xvda1                  20G         15G         3.8G              80%   /       
+-----------------------------------------------------------------------------------------------------------
 [root@infragw01 ~]# 
+
+3. 获取内存利用率
+计算方法：
+剩余内存：free+buffer+cache
+使用内存：total - (free+buffer+cache)
+
+CentOS 6和Ubuntu 14系统：
+[root@vm10 ~]# free | awk -F: '{print $2}' | awk 'NR==2 {total=$1;free=$3+$(NF-1)+$NF;} END {printf "MemoryUsage:%.2f%\n",(1-free/total)*100}'
+MemoryUsage:36.94%
+[root@vm10 ~]# 
+
+CentOS 7和Ubuntu 16系统：
+root@bjofficedevtest02:~# free | awk -F: '{print $2}' | awk ' NR==2 {total=$1;free=$3+$(NF-1);} END {printf "MemoryUsage:%.2f%\n",(1-free/total)*100}'
+MemoryUsage:23.93%
+root@bjofficedevtest02:~# 
+
+4. 统计一个或多个文档的总行数、总单词数以及总字符数(不包括空格，只统计我们能够看到的字符)
+
+[root@vm10 ~]# awk 'BEGIN {lines=0;words=0;chars=0} {lines=NR;words+=NF;char=1;while (char<=NF) {chars+=length($char);char++}} END {printf "Lines: %s\nWords: %s\nChars: %s\n",lines,words,chars}' test
+Lines: 4
+Words: 32
+Chars: 120
+[root@vm10 ~]# 
+
+5. 查看设备的运行时间
+root@bjofficedevtest02:~# uptime | awk -F, '{print $1}' | awk '{for (i=3;i<=NF;i++) {printf "%s ",$i} {printf "\n"} }'
+20 days 
+root@bjofficedevtest02:~# 
+
+6. 对web访问的log进行统计
+作用：统计访问次数最多的前10个IP地址。
+[root@kakaooa01 nginx]# awk '{ip[$1]++} END {for (i in ip) {printf "IP: %-15s Count: %s\n",i,ip[i]}}' access.log | sort -r -k 4 -n | head -n 10
+IP: 59.108.60.18    Count: 643
+IP: 113.108.67.23   Count: 4
+IP: 180.153.205.253 Count: 3
+IP: 101.226.102.97  Count: 3
+IP: 101.226.65.105  Count: 2
+IP: 101.226.51.227  Count: 2
+IP: 101.226.33.240  Count: 2
+IP: 101.226.33.227  Count: 2
+IP: 101.226.33.224  Count: 2
+IP: 101.226.33.204  Count: 2
+[root@kakaooa01 nginx]# 
+
+
+7. 对用户访问的资源进行统计
+# awk '{print $7}' access.log.1 | awk -F? '{resources[$1]++} END {for (i in resources) {printf "Resource: %-70s\tCount: %s\n",i,resources[i]}}' | sort -r -k 4 | head -n 10
 
 ```
