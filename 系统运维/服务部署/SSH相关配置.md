@@ -181,6 +181,20 @@ Identity added: .ssh/id_rsa (.ssh/id_rsa)
 Last login: Tue Aug 30 11:29:43 2016 from 172.17.100.253
 [root@vm10 ~]# 
 
+
+ssh-add命令使用: ssh-add 选项 文件
+说明: 选项和文件均为可选，如果没有指定文件，则默认为~/.ssh/id_rsa、~/.ssh/id_dsa和~/.ssh/identity.
+选项：
+-L：列出公钥。
+-l：列出指纹。
+-d：删除指定的身份信息，后面跟上公钥。
+-D：删除所有的身份信息。
+
+示例1：
+[root@infragw01 ~]# ssh-add -d .ssh/ecgwrsa.pub 
+Identity removed: .ssh/ecgwrsa.pub (.ssh/ecgwrsa.pub)
+[root@infragw01 ~]#
+
 ```
 
 # ssh在目标主机上执行命令

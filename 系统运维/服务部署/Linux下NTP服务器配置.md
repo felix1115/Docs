@@ -38,20 +38,19 @@ pidfile <pid>: 指定pid文件存放的路径。默认为/var/run/ntp.pid
 ```bash
 [root@control ~]# cat /etc/ntp.conf
 # ntp.conf
-
 driftfile /var/lib/ntp/drift
-pidfile   /var/run/ntp.pid
-logfile   /var/log/ntp.log
+logfile /var/log/ntp.log
+pidfile /var/run/ntp.pid
 
-## access contorl
-restrict    default kod nomodify notrap nopeer noquery
-restrict -6 default kod nomodify notrap nopeer noquery
-restrict 127.0.0.1 
 
-restrict 172.17.100.0 mask 255.255.255.0 nomodify notrap kod nopeer
+# Access Control
+restrict    default ignore
+restrict -6 default ignore
+restrict 127.0.0.1
+restrict ::1
+restrict 172.17.100.0 mask 255.255.255.0 nomodify notrap nopeer noquery
 
-## Local NTP Server
-## 使用本地的机器的时间源,minpoll表示客户端最小同步间隔，maxpoll表示最大同步间隔。4和10表示的是2的4次方和2的10次方。
+# Local Clock As NTP Server
 server 127.127.1.0 iburst minpoll 4 maxpoll 10
 fudge 127.127.1.0 stratum 10
 [root@control ~]# 
@@ -108,9 +107,21 @@ crontab -e
 */5 * * * * /usr/sbin/ntpdate 172.17.100.250 && hwclock -w
 
 方法3：修改ntp.conf
-server 172.17.100.250 minpoll 4 maxpoll 10 iburst
-## 不允许172.17.100.250（ntp服务器）向客户端进行时间同步
-restrict 172.17.100.250 mask 255.255.255.255 nomodify notrap noquery nopeer
+# ntp.conf
+driftfile /var/lib/ntp/drift
+pidfile   /var/run/ntp.pid
+logfile   /var/log/ntp.log
+
+## access contorl
+restrict    default ignore
+restrict -6 default ignore
+restrict 127.0.0.1 
+restrict ::1
+
+server 172.17.100.151 iburst minpoll 4 maxpoll 10
+## 不允许172.17.100.151（ntp服务器）向客户端进行时间同步
+restrict 172.17.100.151 nopeer notrap noquery kod nomodify
+
 ```
 
 

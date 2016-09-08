@@ -1,4 +1,3 @@
-[TOC]
 #DHCP介绍
 DHCP：动态主机配置协议。为客户端动态提供IP地址、子网掩码、网关、DNS等信息的，可以简化客户端的配置、节约IP地址、降低IP地址冲突的风险。
 
@@ -38,7 +37,13 @@ DHCP：动态主机配置协议。为客户端动态提供IP地址、子网掩�
 #DHCP的安装和配置
 ##DHCP的安装和相关文件说明
 ```bash
+CentOS系列：
 [root@control ~]# yum install -y dhcp
+
+Ubuntu系列：
+felix@u01:~$ sudo apt-get install -y isc-dhcp-server
+
+服务启动：sudo /etc/init.d/isc-dhcp-server restart
 
 ```
 ```text
@@ -102,6 +107,7 @@ local-port：指定DHCP服务监听的端口。默认为67。最好不要修改�
 #为客户端分配固定IP地址
 hardware <网卡类型> <MAC>：网卡类型通常为Ethernet。为指定MAC分配静态IP地址。
 fixed-address <IP Address>：分配的固定IP地址
+use-host-decl-names on:如果客户端没有主机名，则使用host声明的名字作为客户端的主机名。
 
 #发送DHCP Offer消息前，是否探测IP地址的可用性
 ping-check true|false：如果设置为true，则服务器在发送DHCP Offer消息前，会先发送ICMP ECHO消息探测该IP地址是否可用，等待1s，如果收到回应，则不分配该地址，否则的话，分配该地址。如果设置为false，则不发送ICMP ECHO消息。
@@ -143,15 +149,28 @@ shared-network felix {
         filename "/pxelinux.0";
         next-server 172.17.100.250;
     }
-	
-	#静态地址配置
-	host TEST01 {
-		hardware Ethernet '00:0C:29:50:56:8E'; 
-		fixed-address 172.17.100.100;
-	}
+}
+
+group {
+    use-host-decl-names on;
+    include "/etc/dhcp/static.conf";
 }
 
 [root@control ~]# 
+
+
+[root@control ~]# more /etc/dhcp/static.conf 
+host vm10.felix.com {
+    hardware ethernet 00:0C:29:8C:64:B8;
+    fixed-address 172.17.100.10;
+} 
+
+host ubuntu01 {
+    hardware ethernet 00:0c:29:5c:71:14;
+    fixed-address 172.17.100.200;
+}
+[root@control ~]# 
+
 
 ```
 
@@ -168,8 +187,8 @@ Starting dhcpd:                                            [  OK  ]
 ```bash
 1. 配置文件：/etc/sysconfig/dhcrelay 
 	参数说明
-	INTERFACES="eth0"：指定接收客户端发送DHCP Discovery消息的接口。多个接口之间用空格隔开
-	DHCPSERVERS="172.17.100.250"：指定DHCP服务器的地址。多个DHCP Server之间用空格隔开
+	INTERFACES="eth0 eth1"：指定接收DHCP消息的接口。多个接口之间用空格隔开.
+	DHCPSERVERS="172.17.100.250"：指定DHCP服务器的地址。多个DHCP Server之间用空格隔开.
 
 2. 开启数据包的转发功能
 	临时开启：
