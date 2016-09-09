@@ -3,7 +3,7 @@
 ```
 
 # 配置步骤
-1. 检查OpenSSH的版本
+## 检查OpenSSH的版本
 ```
 版本必须大于4.8p1
 
@@ -12,7 +12,7 @@ OpenSSH_5.3p1, OpenSSL 1.0.1e-fips 11 Feb 2013
 [root@control ~]# 
 ```
 
-2. 修改/etc/ssh/sshd_config文件
+## 修改/etc/ssh/sshd_config文件
 ```
 # override default of no subsystems
 #Subsystem	sftp	/usr/libexec/openssh/sftp-server
@@ -28,7 +28,7 @@ Match Group sftp
 说明：%u表示用户的用户名
 ```
 
-3. 创建用户和组
+## 创建用户和组
 
 * 创建sftp组
 ```
@@ -49,7 +49,7 @@ passwd: all authentication tokens updated successfully.
 [root@control ~]# 
 ```
 
-* 创建目录并修改权限
+## 创建目录并修改权限
 
 ```
 说明：当启用了chroot后，chroot所指定的目录的拥有着必须是root，且其他用户和组不能具有写权限，因此必须要在chroot目录下创建一个目录用于文件的上传。
@@ -67,7 +67,7 @@ drwxr-x--- 2 user01 sftp 4096 Sep  9 11:04 /data/sftp/user01/upload/
 
 ```
 
-* 重启SSH服务并测试
+## 重启SSH服务并测试
 ```
 [root@control ~]# /etc/init.d/sshd restart
 Stopping sshd:                                             [  OK  ]
