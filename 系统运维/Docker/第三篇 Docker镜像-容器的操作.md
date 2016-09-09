@@ -166,10 +166,160 @@ felix@u01:~$
     -h：为容器指定主机名。
     -v：挂载数据卷到容器。
 
-felix@u01:~$ docker create ubuntu:latest 
+felix@u01:~$ docker create -t ubuntu:latest 
 431336b42a0a0c42aca695284645c04c20cee131fcc1f62453f9cd411383d64e
 felix@u01:~$
 
 说明：使用docker create 命令创建的容器默认处于stop状态。可以用docker start命令来启动它。脾气
 ```
 
+* 启动一个处于停止状态的容器 docker start
+```
+选项：
+-i：进入交互式模式，附加容器的STDIN到本地。
+-a：附加容器的STDOUT、STDERR并转发信号。
+```
+
+* 停止一个处于运行状态的容器 docker stop
+```
+docker stop可以停止一个或多个容器。
+选项：
+-t：在发送SIGKILL信号之前等待的秒数。默认为10s。
+
+docker stop首先会向容器发送SIGTERM(15号信号)信号，默认等待10s后，在发送SIGKILL信号(9号信号)。
+
+felix@u01:~$ docker ps
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+d74f03e05c65        ubuntu              "/bin/bash"         9 seconds ago       Up 4 seconds                            dreamy_saha
+felix@u01:~$ docker stop -t 1 d7
+d7
+felix@u01:~$ docker ps 
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+felix@u01:~$ 
+
+```
+
+* 创建并运行容器 docker run
+```
+docker run的工作机制：
+1. 首先会检查本地是否存在指定的镜像，如果不存在就从仓库下载。
+2. 利用镜像创建并启动一个容器。
+3. 分配一个文件系统，并在只读的镜像层上面创建一个可读写层。
+4. 从宿主主机配置的网桥接口中桥接一个虚拟接口到容器中去，并从地址池配置一个IP地址给容器。
+5. 执行用户指定的应用程序。
+6. 应用程序执行完毕后，容器终止。
+
+常用选项：
+-t：为容器分配一个伪终端。
+-i：交互式模式，使STDIN保持打开状态。
+-d：在后台运行容器。
+--name：为容器指定一个名称，默认是随机产生。
+-v：为容器创建数据卷。
+-p：映射容器端口为指定端口。
+-P：映射容器端口为随机端口。
+--rm：容器退出后删除容器。
+-h，--hostname：为容器指定一个主机名。
+--ip：为容器分配一个IP地址。
+
+示例：
+felix@u01:~$ docker run --name felix -t -i -h d1 ubuntu /bin/bash
+root@d1:/# 
+
+```
+* 列出容器 docker ps
+```
+选项：
+-a：列出所有容器。默认是列出运行的容器。
+-l：列出最后创建的容器。
+-q：只显示容器的ID。
+-s：显示容器的总的文件大小(包括镜像的大小)
+
+
+felix@u01:~$ docker ps -a
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS                       PORTS               NAMES
+0c16d54adc84        ubuntu              "/bin/bash"         4 minutes ago       Exited (127) 4 minutes ago                       felix
+felix@u01:~$ 
+
+说明：
+CONTAINER ID：容器的ID。
+IMAGE：容器使用的IMAGE。
+COMMAND：执行的命令。
+CREATE：容器创建的时间。
+STATUS：容器的状态信息。
+PORTS：容器的端口映射信息。
+NAMES：容器的名称。
+
+docker容器里面运行的应用的进程的PID是1，也就是主进程，如果该主进程退出了，容器也就没有存在的必要了。容器是为应用而生。
+
+```
+
+* 进入容器 docker attach
+```
+如果一个容器以-d的方式运行的话，无法看到容器的信息，如果需要进入到容器进行操作的话，可以有很多方式，如docker attach，docker exec、nsenter等。
+
+docker attach不是很方便，当进入到容器时，如果要退出容器，当按ctrl+c或者是exit的时候，就会退出容器。容器处于Exit状态。
+
+felix@u01:~$ docker ps 
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+fd0f69ead3ea        centos              "/bin/bash"         22 minutes ago      Up 8 minutes                            felix
+felix@u01:~$ docker attach felix
+[root@fd0f69ead3ea /]# ls
+anaconda-post.log  bin  dev  etc  home  lib  lib64  lost+found  media  mnt  opt  proc  root  run  sbin  srv  sys  tmp  usr  var
+[root@fd0f69ead3ea /]# exit
+exit
+felix@u01:~$ docker ps -a
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS                     PORTS               NAMES
+fd0f69ead3ea        centos              "/bin/bash"         22 minutes ago      Exited (0) 5 seconds ago                       felix
+felix@u01:~$ 
+
+```
+
+* 在容器内部执行命令 docker exec
+```
+docker exec可以直接在运行的容器内部运行命令，而不需要进入容器。
+
+选项：
+-i：进入交互式模式。
+-t：分配一个伪终端。
+-d：在background模式下运行命令。
+
+示例：
+felix@u01:~$ docker exec felix ps -ef
+UID        PID  PPID  C STIME TTY          TIME CMD
+root         1     0  0 08:17 ?        00:00:00 /bin/bash
+root        40     0  0 08:19 ?        00:00:00 ps -ef
+felix@u01:~$ 
+```
+
+* nsenter
+```
+1. 安装nsenter
+felix@u01:~$ wget https://www.kernel.org/pub/linux/utils/util-linux/v2.28/util-linux-2.28.tar.xz
+felix@u01:~$ tar -Jxf util-linux-2.28.tar.xz 
+felix@u01:~$ cd util-linux-2.28/
+felix@u01:~/util-linux-2.28$ sudo cp nsenter /usr/local/bin/
+felix@u01:~/util-linux-2.28$ 
+
+2. 获取容器的PID
+felix@u01:~$ docker inspect --format "{{.State.Pid}}" myapp
+7413
+felix@u01:~$ 
+
+3. 连接到容器
+felix@u01:~$ sudo nsenter --target 7413 --mount --uts --ipc --net --pid
+root@88693aaa5937:/# 
+
+```
+
+* 删除容器 docker rm
+```
+docker rm可以删除一个或多个容器。
+选项：
+-f：强制删除一个运行中的容器。
+-l：删除指定的link。link用于容器间通信。
+-v：删除和容器关联的数据卷。
+
+felix@u01:~$ docker rm myapp
+myapp
+felix@u01:~$
+```
