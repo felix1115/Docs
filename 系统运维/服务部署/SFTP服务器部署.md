@@ -29,6 +29,7 @@ Match Group sftp
 ```
 
 3. 创建用户和组
+
 * 创建sftp组
 ```
 [root@control ~]# groupadd sftp
@@ -46,12 +47,13 @@ BAD PASSWORD: is too simple
 Retype new password: 
 passwd: all authentication tokens updated successfully.
 [root@control ~]# 
-
 ```
 
 * 创建目录并修改权限
-说明：当启用了chroot后，chroot所指定的目录的拥有着必须是root，且其他用户和组不能具有写权限，因此必须要在chroot目录下创建一个目录用于文件的上传。
+
 ```
+说明：当启用了chroot后，chroot所指定的目录的拥有着必须是root，且其他用户和组不能具有写权限，因此必须要在chroot目录下创建一个目录用于文件的上传。
+
 [root@control ~]# mkdir -p /data/sftp/user01/upload
 [root@control ~]# 
 [root@control ~]# chown user01:sftp /data/sftp/user01/upload
