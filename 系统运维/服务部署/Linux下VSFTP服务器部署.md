@@ -88,7 +88,7 @@ nf_conntrack79453  7 nf_nat_ftp,nf_conntrack_ftp,iptable_nat,nf_nat,nf_conntrack
 **常用参数配置：（可以用man vsftpd.conf查看帮助）**
 
 - 匿名用户相关的参数
-
+```
 	anonymous_enable=YES|NO：是否允许匿名用户登录。
 
 	anon_upload_enable=YES|NO：是否允许匿名用户上传文件。
@@ -108,9 +108,10 @@ nf_conntrack79453  7 nf_nat_ftp,nf_conntrack_ftp,iptable_nat,nf_nat,nf_conntrack
 	chown_uploads=YES|NO：是否改变匿名用户上传文件的拥有者。
 
 	chown_username=who：将匿名用户上传文件的拥有者改为who。当然需要允许匿名用户（anonymous_enable=YES）以及允许匿名用户上传（anon_upload_enable=YES）.
-
+```
 
 - 本地用户相关的参数
+```
 	local_enable=YES|NO：是否允许本地用户登录。
 
 	local_root：指定非匿名用户登录时会引导到的目录。
@@ -122,18 +123,20 @@ nf_conntrack79453  7 nf_nat_ftp,nf_conntrack_ftp,iptable_nat,nf_nat,nf_conntrack
 	download_enable=YES|NO：是否允许用户下载文件。
 
 	local_umask：本地用户上传文件的umask值，如local_umask=022，则到服务器上查看该文件的权限为777-022或者是666-022。
-
+```
 - 用户权限控制相关的参数
-	userlist_file：指定存放被允许或禁止登录的用户列表文件，默认为/etc/vsftpd/user_list。
+```
+    userlist_file：指定存放被允许或禁止登录的用户列表文件，默认为/etc/vsftpd/user_list。
 
 	userlist_enable=YES|NO：是否启用userlist_file的功能。当为YES时，在userlist_file文件中指定的用户尝试登录系统时，在输入密码之前就被拒绝登录了。
 
 	userlist_deny=YES|NO：当为yes时，表示拒绝userlist_file文件中的用户登录，当为no时则表示允许该文件中的用户登录。默认值为YES。
 	注意：ftpusers文件和user_list文件都可以用来限制不能登录ftp服务器的用户，ftpusers这个文件中的用户是不允许登录的，一般不进行修改，而user_list中文件默认也是不允许登录的，可以控制能否登录。如果在ftpusers和user_list中都存在用户，一个不允许，一个允许，以ftpusers文件优先。
-
+```
 
 - chroot相关的参数
-	chroot_local_user=YES|NO：本地用户是否被chroot，限制在自己的家目录里面。yes表示本地用户会被chroot到自己的家目录里面，no表示本地用户不会被chroot到自己的家目录里面。默认为NO
+```
+    chroot_local_user=YES|NO：本地用户是否被chroot，限制在自己的家目录里面。yes表示本地用户会被chroot到自己的家目录里面，no表示本地用户不会被chroot到自己的家目录里面。默认为NO
 
 	chroot_list_file：指定chroot file的文件名。
 
@@ -143,9 +146,10 @@ nf_conntrack79453  7 nf_nat_ftp,nf_conntrack_ftp,iptable_nat,nf_nat,nf_conntrack
 	chroot_list_file=/etc/vsftpd/chroot_list
 	chroot_list_enable=YES
 	chroot_local_user=YES
-
+```
 - ASCII和超时相关的参数
-	ascii_upload_enable=YES|NO：上传文件时是否允许使用ascii传输模式
+```
+    ascii_upload_enable=YES|NO：上传文件时是否允许使用ascii传输模式
 
 	ascii_download_enable=YES|NO：下载文件时是否允许使用ascii传输模式。
 
@@ -158,7 +162,7 @@ nf_conntrack79453  7 nf_nat_ftp,nf_conntrack_ftp,iptable_nat,nf_nat,nf_conntrack
 	pam_service_name=vsftpd：指定vsftpd使用的pam模块的配置文件名称。该配置文件默认在/etc/pam.d目录下。
 
 默认的/etc/pam.d/vsftpd的内容如下：
-```bash
+
 [root@server1 vsftpd]# more /etc/pam.d/vsftpd
 #%PAM-1.0
 session    optional     pam_keyinit.so    force revoke
@@ -175,6 +179,7 @@ file：指定文件名
 ```
 
 - 其他相关参数的配置
+```
 	listen_address：指定vsftpd服务器监听的地址
 
 	listen_port：指定vsftpd服务器的监听端口。默认为21端口
@@ -216,8 +221,10 @@ file：指定文件名
 	tcp_wrappers=YES|NO：是否允许tcp_wrappers管理。
 
 	connect_timeout：在主动模式下，客户端连接服务器的端口时的最大超时时间。默认为60s
+```
 
 - 虚拟用户相关的参数
+```
 	guest_enable=YES:允许虚拟用户登录
 
 	guest_username=vuser：指定虚拟用户映射的本地用户，这里为vuser用户。
@@ -225,9 +232,10 @@ file：指定文件名
 	virtual_use_local_privs=YES：虚拟用户使用本地用户权限。设置为YES时，虚拟用户使用与本地用户相同权限，设置为NO时，虚拟用户使用与匿名用户相同权限(必须开启)，如果为YES，则创建文件时的权限依赖于local_umask，如果为NO，则依赖于anon_umask，该值默认为077.
 
 	pasv_address：指定使用被动模式时使用的回复客户端的IP地址。默认是listen_address指定的地址。
-
+```
 
 -  FTPS相关的参数
+```
 	ssl_enable=YES   //启用SSL的支持
 	ssl_sslv2=NO    //让vsftpd不支持SSLv2，能不支持，就最好不要支持
 	ssl_sslv3=YES    //让vsftpd支持SSLv3
@@ -240,7 +248,7 @@ file：指定文件名
 	force_anon_data_ssl=NO：匿名用户的数据传输不支持SSL
 	force_anon_logins_ssl=NO：匿名用户的登录不使用SSL
 	ssl_ciphers=HIGH
-
+```
 
 
 
