@@ -99,7 +99,7 @@ nf_conntrack79453  7 nf_nat_ftp,nf_conntrack_ftp,iptable_nat,nf_nat,nf_conntrack
 
 	allow_anon_ssl=YES|NO：是否允许匿名用户使用SSL连接。需要ssl_enable设置为YES。
 
-	anon_umask：匿名用户上传文件的umask值。
+	anon_umask：匿名用户上传文件的umask值。默认为077
 
 	anon_root：指定匿名用户登录时会被引导到的家目录。默认为/var/ftp
 
