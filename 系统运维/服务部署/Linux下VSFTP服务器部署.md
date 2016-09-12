@@ -88,6 +88,7 @@ nf_conntrack79453  7 nf_nat_ftp,nf_conntrack_ftp,iptable_nat,nf_nat,nf_conntrack
 **常用参数配置：（可以用man vsftpd.conf查看帮助）**
 
 - 匿名用户相关的参数
+
 	anonymous_enable=YES|NO：是否允许匿名用户登录。
 
 	anon_upload_enable=YES|NO：是否允许匿名用户上传文件。
