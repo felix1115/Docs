@@ -29,13 +29,15 @@ DNS查询过程是指通过DNS服务器将一个FQDN解析为IP地址或者是�
 递归：应该只给允许的客户端执行递归查询。
 
 ##DNS资源记录类型
-DNS服务器在提供名称解析时，会查询自己的数据库，在该数据库中包含了DNS区域资源信息的资源记录（resource record，RR）。常见的资源记录如下：
-    - **SOA（Start of Authority Record起始授权记录）**: 在一个区域中是唯一的，定义了一个区域的全局参数，进行整个区域的管理。
-    - **NS（Name Server名称服务器）**：在一个区域中至少有一条，记录了一个区域中的授权的DNS服务器。
-    - **A（Address地址记录）**：记录了FQDN和IP地址的对应关系。
-    - **CNAME（Canonical Name别名记录）**：别名记录。可以隐藏内部网络的细节。
-    - **PTR**：反向记录，将IP地址映射到FQDN。
-    - **MX(Mail eXchange)**：邮件交换记录。指向一个邮件服务器，根据收件人的地址后缀决定邮件服务器。
+```
+DNS服务器在提供名称解析时，会查询自己的数据库，在该数据库中包含了DNS区域资源信息的资源记录(resource record，RR)。常见的资源记录如下：
+SOA(Start of Authority Record起始授权记录): 在一个区域中是唯一的，定义了一个区域的全局参数，进行整个区域的管理。
+NS(Name Server名称服务器)：在一个区域中至少有一条，记录了一个区域中的授权的DNS服务器。
+A(Address地址记录)：记录了FQDN和IP地址的对应关系。
+CNAME(Canonical Name别名记录)：别名记录。可以隐藏内部网络的细节。
+PTR：反向记录，将IP地址映射到FQDN。
+MX(Mail eXchang)：邮件交换记录。指向一个邮件服务器，根据收件人的地址后缀决定邮件服务器。
+```
 
 - **SOA资源记录定义方法**
 ```text
