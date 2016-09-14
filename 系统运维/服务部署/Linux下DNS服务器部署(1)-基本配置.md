@@ -176,7 +176,7 @@ querylog：yes启用查询日志记录功能。no关闭查询日志记录功能�
 
 allow-transfer：允许哪些slave DNS服务器进行区域传输。
 
-recursion：选项指定是否允许客户端递归查询其他域名服务器。如果希望对本地客户端的查询允许递归，但对来自外部的查询请求禁止递归，可以通过“allow-recursion”选项进行定义。allow-recursion选项可以指定一个允许执行递归查询操作的地址列表。
+blackhole: 指定不接收来自哪些主机的查询请求和地址解析，默认为none。
 
 transfer-source x.x.x.x：指定slave在向master进行区域传输时所使用的源地址。
 
@@ -685,4 +685,309 @@ Nov 13 16:00:02 vm1 named[8391]: client 172.17.100.2#43042: transfer of 'felix.c
 在进行TSIG区域传输的时候，请确保Master和Slave DNS服务器之间的时间同步，如果不同步，则在进行区域传输时会出现如下问题：
 Jan 29 13:44:06 RS3 named[2570]: client 172.17.100.242#51453: request has invalid signature: TSIG named: tsig verify failure (BADTIME)
 Jan 29 13:44:06 RS3 named[2570]: client 172.17.100.242#24885: request has invalid signature: TSIG named: tsig verify failure (BADTIME)
+```
+
+# DDNS配置
+使用DNS为客户端提供名称解析的前提条件是区域数据文件中存在相应的A记录或PTR记录，如果客户端的数量比较多，或者是客户端的IP地址是通过DHCP获取的，IP地址不固定，则无法在DNS的区域数据文件中指定A记录或PTR记录，这时可以使用DDNS。
+DDNS：动态DNS，需要DNS与DHCP的配置使用。
+
+## DNS服务器的配置
+* 使用dnssec-keygen产生密钥
+```
+[root@vm01 etc]# dnssec-keygen -a hmac-md5 -b 128 -n user dhcp
+Kdhcp.+157+05079
+[root@vm01 etc]# cat Kdhcp.+157+05079.key 
+dhcp. IN KEY 0 3 157 msdHPVIgpPtipV/r/NJ3tQ==
+[root@vm01 etc]# pwd
+/var/named/chroot/etc
+[root@vm01 etc]# 
+```
+
+* DNS named.conf配置
+```
+# Key Config for TSIG
+key TSIG {
+	algorithm hmac-md5;
+	secret weJGWfOY8ObdS8OJ0rPvqw==;
+};
+
+server 172.17.100.2 {
+	keys { TSIG; };
+};
+
+# Key Config for DDNS
+key dhcp {
+	algorithm hmac-md5;
+	secret "Ag/6689wCJKCmW9QWJXhXA==";
+};
+
+zone "." IN {
+	type hint;
+	file "named.ca";
+};
+
+
+zone "felix.com" IN {
+	type master;
+	file "lan.felix.com";
+	notify yes;
+	allow-update { key dhcp; };
+	allow-transfer { key TSIG; };
+};
+
+zone "100.17.172.in-addr.arpa" IN {
+	type master;
+	file "lan.172.17.100";
+	notify yes;
+	allow-update { key dhcp; };
+	allow-transfer { key TSIG; };
+};
+
+include "/etc/named.rfc1912.zones";
+include "/etc/named.root.key";
+
+```
+说明：allow-update如果是none，则不允许DDNS更新，如果是key的方式，则表示允许使用key所定义的密钥的客户端所提交的DDNS请求。
+
+* 修改/var/named/chroot/var/named目录的权限，使named具有w权限，因为DDNS中bind需要往里面写数据
+```
+[root@vm01 etc]# ls -ld /var/named/chroot/var/named
+drwxr-x--- 5 root named 4096 Sep 13 12:34 /var/named/chroot/var/named
+[root@vm01 etc]# chown -R named:named /var/named/chroot/var/named/
+[root@vm01 etc]# ls -ld /var/named/chroot/var/named
+drwxr-x--- 5 named named 4096 Sep 13 12:34 /var/named/chroot/var/named
+[root@vm01 etc]# 
+```
+
+## DHCP服务器的配置
+```
+[root@control ~]# cat /etc/dhcp/dhcpd.conf
+# DHCP Config
+#
+ignore client-updates;
+ddns-update-style interim;
+allow bootp;
+allow booting;
+
+option domain-name "felix.com";
+option domain-name-servers 172.17.100.1, 172.17.100.2;
+
+log-facility local7;
+
+default-lease-time 14400;
+max-lease-time 28800;
+
+# Key Config for DDNS
+key dhcp {
+    algorithm hmac-md5;
+    secret "msdHPVIgpPtipV/r/NJ3tQ==";    
+}
+
+zone felix.com. {
+    primary 172.17.100.1;
+    key dhcp;    
+}
+
+zone 100.17.172.in-addr.arpa. {
+    primary 172.17.100.1;
+    key dhcp;    
+}
+
+shared-network felix {
+    subnet 172.17.100.0 netmask 255.255.255.0 {
+        range 172.17.100.150 172.17.100.200;
+        option routers 172.17.100.253;
+        filename "/pxelinux.0";
+        next-server 172.17.100.250;
+    }    
+}
+
+group {
+    use-host-decl-names on;
+    include "/etc/dhcp/static.conf";
+}
+[root@control ~]# 
+```
+说明：这里要将ddns-update-style设置为interim。zone里面的domain没有引号，末尾要加点。
+
+## 测试
+```
+Sep 14 13:48:09 control dhcpd: Added new forward map from Win7-PC.felix.com to 172.17.100.161
+Sep 14 13:48:09 control dhcpd: added reverse map from 161.100.17.172.in-addr.arpa. to Win7-PC.felix.com
+
+[root@vm01 named]# ls -l *.jnl
+-rw-r--r-- 1 named named 768 Sep 14 13:51 lan.172.17.100.jnl
+-rw-r--r-- 1 named named 783 Sep 14 13:51 lan.felix.com.jnl
+[root@vm01 named]# 
+
+```
+
+# DNS子域授权
+在进行子域授权时，需要在上层的DNS服务器(父DNS服务器)上设置管理此子域的DNS服务器的NS记录和A记录，即让所有到达子域的解析请求都指向子域的DNS服务器。
+
+## 父DNS服务器配置
+```
+1. 修改named.conf配置文件(Master和Slave都需要配置)
+dnssec-enable no;
+dnssec-validation no;
+
+2. 修改正向解析文件和反向解析文件，增加子域DNS服务器的NS记录和A记录(仅需要在Master DNS服务器上配置)
+正向解析文件：
+tech.felix.com. IN  NS  ns1.tech.felix.com.
+ns1.tech.felix.com. IN  A   172.17.100.3
+
+反向解析文件:
+tech    IN  NS      ns1.tech.felix.com.
+3       IN  PTR     ns1.tech.felix.com.
+
+3. Master和Slave DNS服务器重启named服务。
+
+```
+
+## 子域DNS服务器配置
+```
+1. named.conf配置
+zone "tech.felix.com" IN {
+	type master;
+	file "lan.tech.felix.com";
+	allow-update { none; };
+};
+
+zone "100.17.172.in-addr.arpa" IN {
+	type master;
+	file "lan.tech.172.17.100";
+	allow-update { none; };
+};
+
+
+2. 区域数据文件配置
+
+[root@vm3 named]# cat lan.tech.felix.com 
+$TTL 600 ; 10 minutes
+@	IN SOA	ns1.tech.felix.com. admin.felix.com. (
+					2016091401	; serial
+					1H	; refresh
+					15M	; retry
+					2D	; expire
+					10M )	; minimum
+
+		IN		NS		ns1.tech.felix.com.
+ns1		IN		A		172.17.100.3
+www		IN		A		172.17.100.3
+[root@vm3 named]# cat lan.tech.172.17.100 
+$TTL 600 ; 10 minutes
+@	IN SOA	ns1.tech.felix.com. admin.felix.com. (
+					2016091401	; serial
+					1H	; refresh
+					15M	; retry
+					2D	; expire
+					10M )	; minimum
+
+		IN		NS		ns1.tech.felix.com.
+3		IN		PTR		ns1.tech.felix.com.
+3		IN		PTR		www.tech.felix.com.
+[root@vm3 named]# 
+
+
+3. 测试
+3.1 父DNS测试子域
+[root@vm01 named]# cat /etc/resolv.conf 
+search felix.com
+domain felix.com
+nameserver 172.17.100.1
+nameserver 172.17.100.2
+options timeout:2 attempts:3 rotate
+
+[root@vm01 named]# 
+[root@vm01 named]# host www.tech.felix.com
+www.tech.felix.com has address 172.17.100.3
+[root@vm01 named]# 
+
+
+3.2 子域测试子域
+[root@vm3 ~]# cat /etc/resolv.conf 
+search tech.felix.com
+domain tech.felix.com
+nameserver 172.17.100.3
+options timeout:2 attempts:3 rotate
+[root@vm3 ~]# 
+[root@vm3 ~]# host www.tech.felix.com
+www.tech.felix.com has address 172.17.100.3
+[root@vm3 ~]# 
+
+3.3 子域测试父域
+[root@vm3 ~]# host ntp.felix.com
+;; connection timed out; trying next origin
+Host ntp.felix.com not found: 3(NXDOMAIN)
+[root@vm3 ~]# 
+
+解析不了？原因：需要配置区域转发。
+
+4. 设置转发服务器
+4.1 named.conf 配置
+说明：这里是所有的区域都转发到父DNS服务器。
+主要设置内容：
+    forwarders { 172.17.100.1; 172.17.100.2; };
+    forward first;
+
+    dnssec-enable no; 
+    dnssec-validation no; 
+    
+
+options {
+    listen-on port 53 { 172.17.100.3; };
+    //listen-on-v6 port 53 { ::1; };
+    directory   "/var/named";
+    dump-file   "/var/named/data/cache_dump.db";
+    statistics-file "/var/named/data/named_stats.txt";
+    memstatistics-file "/var/named/data/named_mem_stats.txt";
+    allow-query     { our-nets; };
+    allow-recursion { our-nets; };
+    forwarders { 172.17.100.1; 172.17.100.2; };
+    forward first;
+
+    dnssec-enable no; 
+    dnssec-validation no; 
+    dnssec-lookaside auto;
+
+    /* Path to ISC DLV key */
+    bindkeys-file "/etc/named.iscdlv.key";
+
+    managed-keys-directory "/var/named/dynamic";
+};
+
+
+4.2 测试
+[root@vm3 ~]# host ntp.felix.com
+ntp.felix.com has address 172.17.100.151
+[root@vm3 ~]# host yum.felix.com
+yum.felix.com has address 172.17.100.250
+[root@vm3 ~]# 
+
+```
+
+# 转发DNS服务器
+## 所有区域都转发到指定的DNS服务器
+```
+1. 修改named.conf
+在options中增加如下内容：
+   
+    forwarders { 172.17.100.1; 172.17.100.2; };
+    forward first;
+
+说明：#设置为转发且模式为first，还可以把模式设置为only；
+      #only为递归请求，如转发服务器返回目标无法解析，则接受这个结果；
+      #first:首先发送递归请求，如果转发服务器返回目标无法解析，则本机再次自行去查询请求 
+```
+
+## 指定的区域转发到指定的DNS服务器
+```
+说明：指定区域类型为forward，并使用forwarders指定转发服务器的地址。
+
+zone "felix.com" IN {
+    type forward;
+    forward first;
+    forwarders { 172.17.100.1; 172.17.100.2; };
+};
+
 ```
