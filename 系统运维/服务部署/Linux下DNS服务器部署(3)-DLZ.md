@@ -114,7 +114,7 @@ mysqldb_clear();
 * 编译安装bind9
 ```
 安装依赖软件包：
-[root@vm01 bind-9.10.4-P2]# yum install -y gcc gcc-c++ openssl openssl-devel openss-libs
+[root@vm01 bind-9.10.4-P2]# yum install -y gcc gcc-c++ openssl openssl-devel openss-libs mysql mysql-devel
 [root@vm01 bind-9.10.4-P2]# ./configure --prefix=/usr/local/source/bind9 --enable-epoll --enable-threads --disable-ipv6 
 [root@vm01 bind-9.10.4-P2]# make
 [root@vm01 bind-9.10.4-P2]# make install
@@ -252,7 +252,7 @@ drwxr-xr-x 2 root named 4096 Sep 19 16:26 var/named
 
 # MySQL数据库配置
 ## 创建用于DLZ的数据库
-'''
+```
 mysql> create database dlz;
 Query OK, 1 row affected (0.00 sec)
 
@@ -264,7 +264,7 @@ Query OK, 0 rows affected (0.00 sec)
 
 mysql> 
 
-'''
+```
 
 ## 创建表
 ```
@@ -320,7 +320,6 @@ NAMED=$PROGRAM/sbin/named
 PROG=named
 CHECKCONFIG=$PROGRAM/sbin/named-checkconf
 CONFIGFILE=$PROGRAM/etc/named.conf
-PIDFILE=/var/run/named.pid
 LOCKFILE=/var/lock/subsys/named
 
 
@@ -351,7 +350,7 @@ start() {
 
 	if [ -x $NAMED ]; then
 		echo -n "Starting $PROG: "
-		daemon --pidfile $PIDFILE $NAMED -c $CONFIGFILE
+		daemon $NAMED -c $CONFIGFILE
 		RETVAL=$?
 		echo
 		[ $RETVAL -eq 0 ] && touch $LOCKFILE
@@ -368,7 +367,7 @@ start() {
 
 stop() {
 	echo -n "Stopping $PROG: "
-	killproc -p $PIDFILE $PROG
+	killproc $PROG
 	RETVAL=$?
 	echo
 	[ $RETVAL -eq 0 ] && rm -f $LOCKFILE
@@ -467,3 +466,251 @@ vim /etc/init.d/mysqld
 
 
 ```
+
+
+# 配置示例1：简单的DNS配置
+## named.conf配置
+```
+# named config
+# ACL Config
+acl nets {
+	172.17.100.0/24;
+};
+
+options {
+	listen-on port 53 { 172.17.100.1; };
+	directory "/usr/local/source/bind9/var/named";
+	allow-query { any; };
+	allow-recursion { nets; };
+};
+
+# Start of rndc.conf
+key "rndc-key" {
+	algorithm hmac-md5;
+	secret "mEVbpBDaleGmHrrn2GvNBg==";
+};
+
+controls {
+	inet 127.0.0.1 port 953 allow { 127.0.0.1; } keys { rndc-key; };
+};
+
+zone "." IN {
+	type hint;
+	file "named.ca";
+};
+
+zone "localhost" IN {
+	type master;
+	notify no;
+	database "mysqldb dlz localhost 172.17.100.3 dlz dlz";
+};
+
+zone "0.0.127.in-addr.arpa" {
+	type master;
+	notify no;
+	database "mysqldb dlz loopback 172.17.100.3 dlz dlz";
+};
+
+zone "felix.com" {
+	type master;
+	notify no;
+	database "mysqldb dlz lan_felix_com 172.17.100.3 dlz dlz";
+};
+
+```
+
+## 数据库表
+### localhost表
+```
+创建表：
+CREATE TABLE localhost (
+  name varchar(255) default NULL,
+  ttl int(11) default NULL,
+  rdtype varchar(255) default NULL,
+  rdata varchar(255) default NULL
+) TYPE=InnoDB;
+
+
+插入数据：
+INSERT INTO localhost VALUES ('localhost', 86400, 'SOA', 'localhost. admin.felix.com. 2016092001 28800 7200 86400 600');
+INSERT INTO localhost VALUES ('localhost', 86400, 'NS', 'localhost.');
+INSERT INTO localhost VALUES ('localhost', 86400, 'A', '127.0.0.1');
+
+查询数据：
+mysql> select * from localhost;
++-----------+-------+--------+-------------------------------------------------------------+
+| name      | ttl   | rdtype | rdata                                                       |
++-----------+-------+--------+-------------------------------------------------------------+
+| localhost | 86400 | SOA    | localhost. admin.felix.com. 2016092001 28800 7200 86400 600 |
+| localhost | 86400 | NS     | localhost.                                                  |
+| localhost | 86400 | A      | 127.0.0.1                                                   |
++-----------+-------+--------+-------------------------------------------------------------+
+3 rows in set (0.00 sec)
+
+mysql> 
+
+```
+
+### loopback表
+```
+创建表：
+CREATE TABLE loopback (
+  name varchar(255) default NULL,
+  ttl int(11) default NULL,
+  rdtype varchar(255) default NULL,
+  rdata varchar(255) default NULL
+) TYPE=InnoDB;
+
+插入数据：
+INSERT INTO loopback VALUES ('0.0.127.in-addr.arpa', 86400, 'SOA', 'localhost. admin.felix.com. 2016092001 28800 7200 86400 600');
+INSERT INTO loopback VALUES ('0.0.127.in-addr.arpa', 86400, 'NS', 'localhost.');
+INSERT INTO loopback VALUES ('1.0.0.127.in-addr.arpa', 86400, 'PTR', 'localhost.');
+
+查询数据：
+mysql> select * from loopback;
++------------------------+-------+--------+-------------------------------------------------------------+
+| name                   | ttl   | rdtype | rdata                                                       |
++------------------------+-------+--------+-------------------------------------------------------------+
+| 0.0.127.in-addr.arpa   | 86400 | SOA    | localhost. admin.felix.com. 2016092001 28800 7200 86400 600 |
+| 0.0.127.in-addr.arpa   | 86400 | NS     | localhost.                                                  |
+| 1.0.0.127.in-addr.arpa | 86400 | PTR    | localhost.                                                  |
++------------------------+-------+--------+-------------------------------------------------------------+
+3 rows in set (0.00 sec)
+
+mysql> 
+
+```
+
+### 常规区域
+```
+创建表：
+CREATE TABLE lan_felix_com (
+  name varchar(255) default NULL,
+  ttl int(11) default NULL,
+  rdtype varchar(255) default NULL,
+  rdata varchar(255) default NULL
+) TYPE=InnoDB;
+
+
+插入数据：
+INSERT INTO lan_felix_com VALUES ('felix.com', 600, 'SOA', 'felix.com. admin.felix.com. 2016092001 28800 7200 86400 600');
+INSERT INTO lan_felix_com VALUES ('felix.com', 600, 'NS', 'ns1.felix.com.');
+INSERT INTO lan_felix_com VALUES ('felix.com', 600, 'NS', 'ns2.felix.com.');
+INSERT INTO lan_felix_com VALUES ('ns1.felix.com', 600, 'A', '172.17.100.1');
+INSERT INTO lan_felix_com VALUES ('ns2.felix.com', 600, 'A', '172.17.100.2');
+INSERT INTO lan_felix_com VALUES ('nfs.felix.com', 600, 'A', '172.17.100.1');
+INSERT INTO lan_felix_com VALUES ('ftp.felix.com', 600, 'A', '172.17.100.1');
+INSERT INTO lan_felix_com VALUES ('yum.felix.com', 600, 'A', '172.17.100.250');
+INSERT INTO lan_felix_com VALUES ('ntp.felix.com', 600, 'A', '172.17.100.151');
+
+```
+
+# 配置示例2：DNS子域授权
+* 父DNS的配置
+```
+zone "." IN {
+    type hint;
+    file "named.ca";
+};
+
+zone "localhost" IN {
+    type master;
+    notify no; 
+    database "mysqldb dlz localhost 172.17.100.3 dlz dlz";
+};
+
+zone "0.0.127.in-addr.arpa" {
+    type master;
+    notify no; 
+    database "mysqldb dlz loopback 172.17.100.3 dlz dlz";
+};
+
+zone "felix.com" {
+    type master;
+    notify no; 
+    database "mysqldb dlz lan_felix_com 172.17.100.3 dlz dlz";
+};
+```
+
+* 子DNS的配置
+```
+zone "." IN {
+	type hint;
+	file "named.ca";
+};
+
+zone "localhost" {
+	type master;
+	notify no;
+	database "mysqldb dlz localhost 172.17.100.3 dlz dlz";
+};
+
+zone "0.0.127.in-addr.arpa" {
+	type master;
+	notify no;
+	database "mysqldb dlz localhost 172.17.100.3 dlz dlz";
+};
+
+zone "felix.com" IN {
+	type forward;
+	forwarders { 172.17.100.1; 172.17.100.2; };
+};
+
+
+zone "tech.felix.com" {
+	type master;
+	notify no;
+	database "mysqldb dlz lan_tech_felix_com 172.17.100.3 dlz dlz";
+};
+
+说明: zone "felix.com"中的forwarders的作用是将所有到达父域的请求都转发到父DNS服务器，否则子DNS服务器无法请求父DNS服务器中的记录。
+
+```
+
+* 父表：lan_felix_com
+```
+mysql> select * from lan_felix_com;
++--------------------+------+--------+-------------------------------------------------------------+
+| name               | ttl  | rdtype | rdata                                                       |
++--------------------+------+--------+-------------------------------------------------------------+
+| felix.com          |  600 | SOA    | felix.com. admin.felix.com. 2016092001 28800 7200 86400 600 |
+| felix.com          |  600 | NS     | ns1.felix.com.                                              |
+| felix.com          |  600 | NS     | ns2.felix.com.                                              |
+| ns1.felix.com      |  600 | A      | 172.17.100.1                                                |
+| ns2.felix.com      |  600 | A      | 172.17.100.2                                                |
+| nfs.felix.com      |  600 | A      | 172.17.100.1                                                |
+| ftp.felix.com      |  600 | A      | 172.17.100.1                                                |
+| yum.felix.com      |  600 | A      | 172.17.100.250                                              |
+| ntp.felix.com      |  600 | A      | 172.17.100.151                                              |
+| tech.felix.com     |  600 | NS     | ns1.tech.felix.com.                                         |
+| ns1.tech.felix.com |  600 | A      | 172.17.100.3                                                |
++--------------------+------+--------+-------------------------------------------------------------+
+11 rows in set (0.00 sec)
+
+mysql> 
+
+说明：
+| tech.felix.com     |  600 | NS     | ns1.tech.felix.com.                                         |
+| ns1.tech.felix.com |  600 | A      | 172.17.100.3                                                |
+这里增加了对子域的授权
+
+```
+
+* 子表：lan_tech_felix_com
+```
+mysql> select * from lan_tech_felix_com;
++---------------------+------+--------+------------------------------------------------------------------+
+| name                | ttl  | rdtype | rdata                                                            |
++---------------------+------+--------+------------------------------------------------------------------+
+| tech.felix.com      |  600 | SOA    | tech.felix.com. admin.felix.com. 2016092001 28800 7200 86400 600 |
+| tech.felix.com      |  600 | NS     | ns1.tech.felix.com.                                              |
+| ns1.tech.felix.com  |  600 | A      | 172.17.100.3                                                     |
+| www.tech.felix.com  |  600 | A      | 172.17.100.3                                                     |
+| test.tech.felix.com |  600 | A      | 172.17.100.100                                                   |
++---------------------+------+--------+------------------------------------------------------------------+
+5 rows in set (0.00 sec)
+
+mysql> 
+
+```
+
