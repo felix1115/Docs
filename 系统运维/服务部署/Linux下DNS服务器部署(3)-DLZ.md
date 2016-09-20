@@ -1,6 +1,6 @@
 # MySQL数据库
 ## 安装MySQL
-'''
+```
 * 安装MySQL
 [root@vm01 ~]# yum install -y mysql mysql-devel mysql-libs mysql-server
 
@@ -35,7 +35,7 @@ Query OK, 0 rows affected (0.00 sec)
 
 mysql> 
 
-'''
+```
 
 # mysql-bind
 ## 下载mysql-bind
