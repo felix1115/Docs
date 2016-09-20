@@ -18,7 +18,7 @@ fi
 
 if [ $(sed -n '/^Subsystem.*internal-sftp$/p' /etc/ssh/sshd_config | wc -l) -ne 0 ]; then
 	echo
-	echo -e  "\033[33m[Warning] The server may has been configed lsftp, please check it\033[m"
+	echo -e  "\033[33m[Warning] The server may has been configed sftp, please check it\033[m"
 	echo
 	echo '-----------------------------------------'
 	grep -A10 '^Subsystem' $SSHD_CONFIG
