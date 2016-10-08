@@ -75,5 +75,5 @@ drwxr-xr-x 2 root root 4096 Jan 23 21:57 repo_mirror             # yum源存储目录
 ```
 
 # cobbler设计方式
-[cobbler设计方式](https://github.com/felix1115/Docs/blob/master/Images/cobbler-1.png)
+![cobbler设计方式](https://github.com/felix1115/Docs/blob/master/Images/cobbler-1.png)
 
