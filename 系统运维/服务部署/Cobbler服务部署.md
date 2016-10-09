@@ -496,3 +496,20 @@ CentOS6.5-x86_64
 4. 客户端重启
 [root@localhost ~]# reboot
 ```
+
+# 为客户端指定相关信息
+使用cobbler可以为客户端指定主机名、IP地址、子网掩码、网关、DNS等信息。
+说明：需要cobbler管理DHCP服务器。
+
+```
+1. 创建system
+[root@vm02 ~]# cobbler system add --name vm06 --hostname vm06 --ip-address 172.17.100.6 --subnet 255.255.255.0 --gateway 172.17.100.253 --interface eth0 --mac 00:0C:29:01:38:65 --static 1 --profile CentOS6.5-x86_64 --name-servers 172.17.100.1 172.17.100.2
+[root@vm02 ~]# cobbler system list
+   vm06
+[root@vm02 ~]# 
+
+2. 为koan客户但指定system
+[root@localhost ~]# koan --server 172.17.100.2 --port 80 -r --profile CentOS6.5-x86_64
+[root@localhost ~]# koan --server 172.17.100.2 --port 80 -r --system vm06
+
+```
