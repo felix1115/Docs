@@ -453,3 +453,46 @@ received on stderr:
 ![cobbler安装界面2](https://github.com/felix1115/Docs/blob/master/Images/cobbler-3.png)
 
 
+## cobbler yum配置
+```
+1. 添加repo
+[root@vm02 kickstarts]# cobbler repo add --name=local --arch=x86_64 --mirror=http://yum.felix.com
+[root@vm02 kickstarts]# 
+
+2. 将repo和profile关联
+[root@vm02 kickstarts]# cobbler profile edit --name=CentOS6.5-x86_64 --repos=local
+[root@vm02 kickstarts]# 
+
+3. 同步仓库
+[root@vm02 kickstarts]# cobbler reposync
+
+说明：这一步会比较慢，因为要同步很多的RPM包到/var/www/cobbler/repo_mirror/repo-name中
+
+```
+
+# koan客户端重新安装系统
+```
+1. 安装koan
+[root@vm02 cobbler]# yum localinstall -y koan-2.6.6-23.2.noarch.rpm 
+
+2. 查询信息
+[root@localhost ~]# koan --server 172.17.100.2 --port 80 --list profiles
+- looking for Cobbler at http://172.17.100.2:80/cobbler_api
+CentOS6.5-x86_64
+[root@localhost ~]# 
+
+说明：
+--server：指定cobbler服务器的地址。
+--port：指定cobbler服务器的端口。默认为80.
+--list：指定要查询的信息类型。有：profiles、images、systems。
+
+3. 重新安装
+[root@localhost ~]#  koan --server 172.17.100.2 --port 80 -r --profile CentOS6.5-x86_64
+
+说明：
+-r：表示replace-self，在下次重启时将会重新安装系统。
+--profile：指定安装时所使用的profile名称。
+
+4. 客户端重启
+[root@localhost ~]# reboot
+```
