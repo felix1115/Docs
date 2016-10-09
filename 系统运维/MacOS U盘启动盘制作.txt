@@ -1,0 +1,19 @@
+OS X 10.11安装U盘制作教程 
+1. 提前准备：8G空U盘、OS X 10.11安装文件 
+2. 首先准备一个空的U盘（最低8GB的），如果里面有重要资料请及时拷贝出来 
+3. 进入Finder－应用程序－实用工具，运行里面的“磁盘工具”软件，或者直接用 Spotlight 搜索“磁盘工具” 打开， 
+4. 在左方列表中找到 U 盘的名称并点击，顶部选择「分区」，然后在「分区布局」选择「1个分区」在此界面中将格式更改为Mac OS 扩展（日志式）名称命名为123，然后选择点击选项选择「GUID 分区表」，然后点击「好」 
+5. 点「应用」开始对 U 盘进行格式化。 
+6. OS X 10.11安装文件“安装OS X EL Capitan”放置在Finder－应用程序下 
+7. 打开Finder－应用程序－实用工具－终端 
+8. 在终端复制下方代码后回车 
+9. sudo /Applications/Install\ OS\ X\ El\ Capitan.app/Contents/Resources/createinstallmedia --volume /Volumes/123 --applicationpath /Applications/Install\ OS\ X\ El\ Capitan.app “回车 ” 
+10. password：处输入开机密码，但是密码不会显示出来，输入完“回车”， 
+11. 选择“Y”，“回车”。 
+以下终端显示内容：Erasing Disk: 0&#37;... 10&#37;... 20&#37;... 30&#37;...100&#37;... 
+Copying installer files to disk... 
+Copy complete. 
+Making disk bootable... 
+Copying boot files... 
+Copy complete. 
+Done.
