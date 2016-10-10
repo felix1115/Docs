@@ -167,6 +167,59 @@ Syntax OK
 ```
 
 # MPM模块介绍
+>MPM:Multi-Processing Modules，MPM用于绑定网络接口、接收请求、调度子进程处理请求等。
+
+## prefork
+>prefork采用预派生进程的方式处理用户请求，一个进程处理一个用户的请求。
+
+```
+# prefork MPM
+# StartServers: number of server processes to start
+# MinSpareServers: minimum number of server processes which are kept spare
+# MaxSpareServers: maximum number of server processes which are kept spare
+# MaxClients: maximum number of server processes allowed to start
+# MaxRequestsPerChild: maximum number of requests a server process serves
+<IfModule mpm_prefork_module>
+    ServerLimit           16       //服务允许可配置的进程的最大上限。该值在prefok MPM中的硬限制是200000，在worker和event MPM中硬限制是20000.修改该值时，使用restart服务不生效，但是MaxClients可以生效。
+    StartServers          5        //在服务启动时创建的子进程数。
+    MinSpareServers       5        //最小空闲进程数。空闲进程是指没有处理请求的进程。如果空闲的进程数小于该值时，父进程就会根据如下方法产生子进程。先一秒钟产生一个，等待一秒，然后在一秒钟产生两个，等待一秒，然后在一秒钟产生四个，等待一秒，直到一秒钟产生32.
+    MaxSpareServers      10        //最大空闲进程数。空闲进程是指没有处理请求的进程。如果空闲的进程数大于该值，则父进程会kill掉多余的进程。如果该值小于或等于MinSpareServers，则Apache会自动的调整该值为MinSpareServers+1.
+    MaxClients          150        //指定Apache可以同时处理的请求数，当同时处理的请求数多于该值时，多余的连接将会排队，直到某个请求处理结束。排队的连接最多可以达到ListenBackLog设定的值，LiostenBackLog默认值为511，该值指定了最大未处理的连接的队列长度。MlaxCients默认值为256，如果要增加这个值，也需要增加ServerLimit。
+    MaxRequestsPerChild   0        //每个子进程处理多少个请求后将会退出。每个子进程在处理了“MaxRequestsPerChild”个请求后将自动销毁。0意味着无限，即子进程永不销毁。虽然设为0可以使每个子进程处理更多的请求，但如果设成非零值也有两点重要的好处：可防止意外的内存泄漏；在服务器负载下降的时侯会自动减少子进程数。因此，可根据服务器的负载来调整这个值。当开启了KleepAive时，只有第一个请求会被计数，因此在KeepAlive中，该值的意思是：一个子进程处理多少个连接后将会退出。
+</IfModule>
+
+```
+
+* prefork工作过程
+>在httpd服务启动之后，初始启动5个工作进程（由StartServers定义），httpd根据需要自动调整工作进程的个数，最大允许启动250个工作进程（由MaxClients定义），也就是说当网站访问量大的时候，启动了大量工作进程，而在访问量变少时，不再需要这些工作进程了，httpd通过MinSpareServers和MaxSpareServers自动调节工作进程的数量。如果当前的空闲进程大于MaxSpareServer定义的最大空闲进程数，httpd将会杀死超额的工作进程；如果当前的空闲进程小于MinSpareServer定义的最小空闲进程数，httpd将会启动新的工作进程：启动1个进程，稍等一会儿，启动2个进程，稍等一会儿，启动4个进程，然后一直以指数方式启动进程，一直到每秒钟产生32个工作进程，它将停止启动进程，一直到当前进程能满足最小空闲进程（MinSpareServers)。一个工作进程在处理了最大请求数（MaxRequestPerChild)之后，将会被杀死，设置为0表示永不地期。
+
+
+## worker
+>worker MPM采用了混合多进程和多线程的方式，使用线程处理用户请求。
+
+```
+# worker MPM
+# StartServers: initial number of server processes to start
+# MaxClients: maximum number of simultaneous client connections
+# MinSpareThreads: minimum number of worker threads which are kept spare
+# MaxSpareThreads: maximum number of worker threads which are kept spare
+# ThreadsPerChild: constant number of worker threads in each server process
+# MaxRequestsPerChild: maximum number of requests a server process serves
+<IfModule mpm_worker_module>
+    ServerLimit          16    //服务器允许的可配置的进程的最大上限。默认为16. worker MPM硬限制是20000。如果MaxClients除以ThreadsPerChild大于16时，需要修改该值。
+    StartServers         3     //服务启动时，默认启动的工作进程数
+    MaxClients          400    //最多允许多少个客户端同时连接。该值是ServerLimit乘以ThreadsPerChild,因此如果要增加该值，则需要同时增加ServerLimit。
+    MinSpareThreads      25    //最小空闲线程数
+    MaxSpareThreads      75    //最大空闲线程数
+    ThreadsPerChild      25    //每个工作进程可以产生的线程数
+    MaxRequestsPerChild   0    //每个进程在生命周期内所允许服务的最大请求数。每个子进程在处理了“MaxRequestsPerChild”个请求后将自动销毁。0意味着无限，即子进程永不销毁。虽然设为0可以使每个子进程处理更多的请求，但如果设成非零值也有两点重要的好处：可防止意外的内存泄漏；在服务器负载下降的时侯会自动减少子进程数。因此，可根据服务器的负载来调整这个值。当开启了KleepAive时，只有第一个请求会被计数，因此在KeepAlive中，该值的意思是：一个子进程处理多少个连接后将会退出。
+	Threadlimit  64    //指定一个进程产生线程的可配置的最大上限。默认为64.硬限制为20000.
+</IfModule>
+```
+
+## event
+>一个线程处理多个请求，基于worker MPM。配置和worker一致。如果要使用event MPM，则在编译时需要使用--with-mpm=event。
+
 
 
 # Apache源码安装启动脚本
