@@ -224,7 +224,96 @@ Syntax OK
 
 
 # Apache源码安装启动脚本
+```
+#!/bin/bash
+#
+# httpd        Startup script for the Apache HTTP Server
+#
+# chkconfig: - 85 15
+#
+### BEGIN INIT INFO
+# Provides: httpd
+# Required-Start: $local_fs $remote_fs $network $named
+# Required-Stop: $local_fs $remote_fs $network
+# Should-Start: distcache
+# Short-Description: start and stop Apache HTTP Server
+# Description: The Apache HTTP Server is an extensible server 
+#  implementing the current HTTP standards.
+### END INIT INFO
 
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+PROGRAM=/usr/local/source/apache22
+CONFIG=$PROGRAM/conf/httpd.conf
+PROG=httpd
+HTTPD=$PROGRAM/bin/httpd
+PIDFILE=/var/run/httpd/httpd.pid
+LOCKFILE=/var/lock/subsys/httpd
+
+start() {
+	echo -n "Starting $PROG: "
+	daemon $HTTPD -k start
+	RETVAL=$?
+	echo
+	[ $RETVAL -eq 0 ] && touch $LOCKFILE
+	return $RETVAL
+}
+
+stop() {
+	echo -n "Stopping $PROG: "
+	killproc -p $PIDFILE $PROG
+	RETVAL=$?
+	echo
+	[ $RETVAL = 0 ] && rm -f $LOCKFILE
+}
+
+reload() {
+    echo -n "Reloading $PROG: "
+    if ! $HTTPD -t &> /dev/null; then
+        RETVAL=6
+        echo "not reloading due to configuration syntax error"
+        failure "not reloading $PROG due to configuration syntax error"
+    else
+        killproc -p ${PIDFILE} $PROG -HUP
+    fi
+    echo
+}
+
+case "$1" in
+  start)
+	start
+	;;
+  stop)
+	stop
+	;;
+  status)
+    status -p $PIDFILE $HTTPD
+	;;
+  restart)
+	stop
+	start
+	;;
+  reload)
+    reload
+	;;
+  configtest)
+	$HTTPD -t
+	;;
+  graceful)
+	$HTTPD -k graceful
+	;;
+  graceful-stop)
+	$HTTPD -k graceful-stop
+	;;
+  *)
+	echo "Usage: $0 {start|stop|restart|reload|status|graceful|graceful-stop|configtest}"
+	;;
+esac
+
+exit 0
+
+```
 
 # apachectl和httpd的使用
 
