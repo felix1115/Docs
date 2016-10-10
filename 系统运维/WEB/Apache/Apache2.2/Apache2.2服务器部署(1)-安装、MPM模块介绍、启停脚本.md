@@ -191,6 +191,7 @@ Syntax OK
 ```
 
 * prefork工作过程
+
 >在httpd服务启动之后，初始启动5个工作进程（由StartServers定义），httpd根据需要自动调整工作进程的个数，最大允许启动250个工作进程（由MaxClients定义），也就是说当网站访问量大的时候，启动了大量工作进程，而在访问量变少时，不再需要这些工作进程了，httpd通过MinSpareServers和MaxSpareServers自动调节工作进程的数量。如果当前的空闲进程大于MaxSpareServer定义的最大空闲进程数，httpd将会杀死超额的工作进程；如果当前的空闲进程小于MinSpareServer定义的最小空闲进程数，httpd将会启动新的工作进程：启动1个进程，稍等一会儿，启动2个进程，稍等一会儿，启动4个进程，然后一直以指数方式启动进程，一直到每秒钟产生32个工作进程，它将停止启动进程，一直到当前进程能满足最小空闲进程（MinSpareServers)。一个工作进程在处理了最大请求数（MaxRequestPerChild)之后，将会被杀死，设置为0表示永不地期。
 
 
