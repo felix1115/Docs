@@ -15,7 +15,8 @@
 
 ## 编辑安装httpd 2.2.31
 ### 静态编译
-所谓的静态编译是指所有的模块都编译进httpd这个文件中。在编译时不需要指定--enable-mods-shared='module-name'，在modules目录中不会有module.so的文件。
+>所谓的静态编译是指所有的模块都编译进httpd这个文件中。在编译时不需要指定--enable-mods-shared='module-name'，在modules目录中不会有module.so的文件。
+
 ```
 [root@vm3 apache]# tar -jxf httpd-2.2.31.tar.bz2 
 [root@vm3 apache]# cd httpd-2.2.31
@@ -69,7 +70,9 @@ Syntax OK
 ```
 
 ### 动态编译(DSO)
-动态编译的模块是在编译时使用--enable-mods-shared='module-name'，会在modules目录下生成module.so的文件，在配置文件中需要使用loadmodule载入模块。
+>动态编译的模块是在编译时使用--enable-mods-shared='module-name'，会在modules目录下生成module.so的文件，在配置文件中需要使用loadmodule载入模块。
+>--with-mpm=worker表示将MPM编译成一个静态模块。MPM模块可以是：prefork、worker、event。如果没有该选项，则默认为prefork模块。
+
 ```
 [root@vm3 apache]# tar -jxf httpd-2.2.31.tar.bz2 
 [root@vm3 apache]# cd httpd-2.2.31
@@ -228,9 +231,30 @@ Options:
 >apachectl -k restart或httpd -k restart：发送的是SIGHUP(kill -1)信号。会通知父进程终止所有的子进程，而父进程不会退出，然后父进程会重新读取配置文件，然后重新打开日志文件，最后父进程会spawns(fork and exec)一组新的子进程处理客户端的请求。
 
 * graceful
->apachectl -k graceful或httpd -k graceful：表示的是优雅的重启。发送的是SIGUSR1(kill -10)信号给父进程。该信号会通知子进程处理完当前正在处理的请求后退出(如果子进程当前没有处理任何请求，则立即退出)，然后父进程会重启读取配置文件、重新打开日志文件，并产生新的子进程替代已经退出的子进程处理新的请求。
+>apachectl -k graceful或httpd -k graceful：表示的是优雅的重启。发送的是SIGUSR1(kill -10)信号给父进程。该信号会通知子进程处理完当前正在处理的请求后退出(如果子进程当前没有处理任何请求，则立即退出)，然后父进程会重新读取配置文件、重新打开日志文件，并产生新的子进程替代已经退出的子进程处理新的请求。
 注意：如果配置文件有错误，则会引起httpd停止服务。
 
 * graceful-stop
 >apachectl -k graceful-stop或httpd -k graceful-stop：表示的是优雅的停止。发送的是SIGWINCH(kill -28)信号给父进程。该信号会通知子进程处理完当前正在处理的请求后退出(如果子进程当前没有处理任何请求，则立即退出)，然后父进程将会删除PID文件，并停止监听在任何端口上。父进程将会继续运行，并且监听正在处理请求的子进程，当所有的子进程处理完请求并且退出后或者是超过GracefulShutdownTimeout所指定的时间，父进程将会退出。如果超时，则剩下的子进程会收到SIGTERM信号，强制退出。
 
+
+# 在不重新编译Apache的情况下支持其他模块
+```
+1：首先进入到Apache的源码包的modules目录下。
+[root@vm02 modules]# pwd
+/opt/httpd-2.2.31/modules
+[root@vm02 modules]# 
+
+2：进入到需要安装的模块目录
+[root@vm02 modules]# cd proxy/
+[root@vm02 proxy]# 
+
+3：安装模块
+[root@vm02 proxy]# /usr/local/source/apache22/bin/apxs -i -a -c mod_proxy.c 
+说明：
+-i：表示安装模块。
+-a：表示启用模块。
+-A：表示注释模块。
+-c：此选项表示需要执行编译操作。它首先会编译C源程序(.c)files为对应的目标代码文件(.o)，然后连接这些目标代码和files中其余的目标代码文件(.o和.a)，以生成动态共享对象dso file 。如果没有指定 -o 选项，则此输出文件名由files中的第一个文件名推测得到，也就是默认为mod_name.so
+
+```
