@@ -80,7 +80,6 @@ erverRoot，如果以"/"开始，则为绝对路径。
 * TimeOut
 ```
 作用：在通信期间，Apache用于等待发送和接收数据的时间。默认为300s
-
 ```
 
 * KeepAlive
@@ -118,7 +117,6 @@ Off：表示关闭KleepAive功能。每一个HTTP请求都需要建立一个TCP连接。
 AccessFileName .acl
 
 当用户访问/usr/local/web/index.html时，服务将会依次查找/.acl, /usr/.acl, /usr/local/.acl 和 /usr/local/web/.acl，最后才会返回index.html。
-
 ```
 
 * DocumentRoot
@@ -151,14 +149,68 @@ LoadFile: 载入库文件。格式为：LoadFile filename [filename] ...
 * LogLevel
 ```
 作用：指定要记录在error_log中的消息级别。
-可用的值有：debug/info/notice/warn/error/crit/alert/emerg。
 
+可用的值有：debug/info/notice/warn/error/crit/alert/emerg。
 ```
 
 * ErrorLog
 ```
 作用：指定错误消息记录的位置。如果以"/"开始，则为绝对路径，否则为相对于ServerRoot的相对路径。
+
 如：
 ErrorLog "logs/error_log"
 
+注：如果虚拟主机中配置ErrorLog，则虚拟主机中的log会记录在其指定的位置，而不是全局指定的位置，除非虚拟主机中没有指定ErrorLog。
 ```
+
+* LogFormat
+```
+作用：定义用户访问日志的日志输出格式。
+
+如：
+LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined
+
+说明：
+\n：换行
+\t：制表符
+%%：表示百分号(%)
+%a：远程客户端的IP地址。
+%A：本地服务器端的IP地址。
+%b：服务器响应的字节数，不包括HTTP头部。当为"-"时，则表示没有发送数据。
+%B：服务器响应的字节数，不包括HTTP头部。如果没有字节发送，则显示为0.
+%D：处理请求所花费的时间，单位为微秒。1s=1000ms, 1ms=1000us
+%f：客户端请求的文件名。显示的是服务器端完整的文件路径。如：/usr/local/source/apache22/htdocs/index.html
+%h：远程客户端主机地址。
+%{Foobar}i：在发送到服务器端的请求头中的Foobar的内容。如%{User-Agent}i
+%H：请求的协议。
+%k：在同一个连接中处理的请求数。
+%l：远程用户的登陆名。如果没有，则显示"-"
+%m：客户端所使用的请求方式。如GET/POST/PUT/DELETE等
+%p：服务器处理请求的标准端口。
+%P：服务器处理请求的子进程PID。
+%q：查询字符串。
+%r：请求的第一行内容。
+%R：生成response的处理程序(Handler)
+%s：请求状态。对于内部重定向的请求，%s表示的是原始请求的状态，%>s则表示的是最后请求的状态。
+%t：接收请求的时间。
+%{format}t：自定义接收请求的时间的格式。如%{%Y-%m-%d %H:%M:%S}t。
+%T：处理请求的所花费的时间，单位是秒。
+%{UNIT}T：处理请求所花费的时间。UNIT可以是ms(毫秒)，us(微秒)，s(秒)
+%u：远程认证的用户名。
+%U：客户端请求的URL路径名，不包括任何的query string。
+%v：服务器端处理请求的ServerName。
+%X：当完成响应(response)的时候的连接状态。X：表示在响应完成之前放弃连接。+：表示在响应被发送以后，连接可能使用KeepAlive。-：表示响应发送以后，连接被关闭。
+
+需要使用mod_logio模块
+%I：服务器收到的字节数，包括请求和请求头。
+%O：服务器发送的字节数，包括响应头。
+
+
+combined：这个是一个名称，用于CustomLog的引用。
+```
+
+* CustomLog
+```
+指定用户的访问日志存储位置。
+```
+
