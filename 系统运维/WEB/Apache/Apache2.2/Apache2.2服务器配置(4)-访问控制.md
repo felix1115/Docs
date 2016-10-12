@@ -85,8 +85,23 @@ Starting httpd:                                            [  OK  ]
 ```
 
 * 测试
-![Basic认证](https://github.com/felix1115/Docs/blob/master/images/apapache22-1.png)
+![Basic认证](https://github.com/felix1115/Docs/blob/master/Images/apache22-1.png)
 
+
+* 添加和删除用户
+```
+添加用户：
+[root@vm3 apache22]# /usr/local/source/apache22/bin/htpasswd /usr/local/source/apache22/conf/.auth_config test02
+New password: 
+Re-type new password: 
+Adding password for user test02
+[root@vm3 apache22]#
+
+删除用户：
+[root@vm3 apache22]# /usr/local/source/apache22/bin/htpasswd -D /usr/local/source/apache22/conf/.auth_config test02
+Deleting password for user test02
+[root@vm3 apache22]# 
+```
 
 ## Digest认证(推荐结合SSL)
 * 配置参数介绍
@@ -104,4 +119,75 @@ Require user <user1> [user2> ...   允许指定的用户访问。
 Require group <group1> [group2] ...  允许在组中的用户访问。
 Require valid-user：允许有效的用户访问。
 Satisfy：可以是All或者是Any。默认是All。作用是：如果同时启用了Allow（主机的访问控制）和Require（用户访问控制），如果设置为All，则表示必须是从允许的主机，并且输入正确的用户名和密码才行。而如果是Any，则表示来自允许的主机或者是输入了正确的用户名或者是密码都可以。
+```
+
+* 产生密码文件htdigest
+```
+Usage: htdigest [-c] passwordfile realm username
+The -c flag creates a new file.
+说明：
+-c：表示创建密码文件，第一次使用。如果密码文件已经存在了，则会先删除，在创建。
+realm：用户名属于的领域。
+```
+
+* 配置示例
+```
+Alias /test	/data/test
+
+<Directory "/data/test">
+	AllowOverride AuthConfig
+	Options None
+	Order allow,deny
+	Allow from all
+	AuthType Digest
+	AuthName "Test Auth"
+	AuthUserFile "/usr/local/source/apache22/conf/.digest_auth_config"
+	AuthBasicProvider file
+	Require user test03
+	Satisfy All
+</Directory>
+```
+
+```
+[root@vm3 apache22]# /usr/local/source/apache22/bin/htdigest -c /usr/local/source/apache22/conf/.digest_auth_config 'Test Auth' test03
+Adding password for test03 in realm Test Auth.
+New password: 
+Re-type new password: 
+[root@vm3 apache22]# cat /usr/local/source/apache22/conf/.digest_auth_config 
+test03:Test Auth:a7e656c320ce56edaa56ce63fb663b6c
+[root@vm3 apache22]# 
+```
+
+```
+[root@vm3 apache22]# /etc/init.d/httpd restart
+Stopping httpd:                                            [  OK  ]
+Starting httpd:                                            [  OK  ]
+[root@vm3 apache22]# 
+```
+
+* 测试
+![Digest认证](https://github.com/felix1115/Docs/blob/master/Images/apache22-2.png)
+
+* 添加和删除用户
+```
+添加用户：
+[root@vm3 apache22]# /usr/local/source/apache22/bin/htdigest /usr/local/source/apache22/conf/.digest_auth_config 'Test Auth' test04
+Adding user test04 in realm Test Auth
+New password: 
+Re-type new password: 
+[root@vm3 apache22]# cat /usr/local/source/apache22/conf/.digest_auth_config 
+test03:Test Auth:a7e656c320ce56edaa56ce63fb663b6c
+test04:Test Auth:69719387dfce3cbacaedf4491df928d4
+[root@vm3 apache22]# 
+
+删除用户：
+1. 可以用htpasswd删除
+[root@vm3 apache22]# /usr/local/source/apache22/bin/htpasswd -D /usr/local/source/apache22/conf/.digest_auth_config test04
+Deleting password for user test04
+[root@vm3 apache22]#
+
+2. 使用sed删除
+[root@vm3 apache22]# sed -i '/^\<test04\>/d' /usr/local/source/apache22/conf/.digest_auth_config
+[root@vm3 apache22]#
+
 ```
