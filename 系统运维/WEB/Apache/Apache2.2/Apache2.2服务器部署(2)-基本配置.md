@@ -214,3 +214,136 @@ combined：这个是一个名称，用于CustomLog的引用。
 指定用户的访问日志存储位置。
 ```
 
+* Alias
+
+>需要mod_alias模块的支持。
+
+```
+作用：映射URL到本地文件系统。这个指令允许文档存储在本地文件系统的其他位置而不是DocumentRoot所指定的位置。
+语法：Alias <URL-PATH> <file-path | directory-path> 
+注意：如果URL-PATH以"/"结尾，则file-path或者是directory-path也要以"/"结尾，反之亦然，两者要匹配。 
+
+示例：
+Alias /image  /data/www/image
+Alias /image/ /data/www/image/
+
+配置示例
+1. 在conf/extra/目录下新建一个httpd-test.conf文件
+[root@vm3 conf]# more extra/httpd-test.conf 
+Alias /test/	/data/test/
+
+<Directory "/data/test">
+	AllowOverride None
+	Options None
+	Order allow,deny
+	Allow from all
+</Directory>
+[root@vm3 conf]# 
+
+2. 将该文件在httpd.conf中Include进来
+[root@vm3 conf]# grep 'httpd-test' httpd.conf 
+Include conf/extra/httpd-test.conf
+[root@vm3 conf]# 
+
+3. 在/data/test目录下创建测试页面
+[root@vm3 conf]# cat /data/test/index.html 
+<h1>Test Page</h1>
+[root@vm3 conf]# 
+
+4. 测试
+[root@vm01 ~]# curl www.felix.com/test/
+<h1>Test Page</h1>
+[root@vm01 ~]# 
+
+```
+
+* AliasMatch
+```
+作用：使用正则表达式映射URL到本地文件系统。
+语法：AliasMatch <URL-PATH-REGEXP> <file-path | directory-path> 
+注意：在URL-PATH中如果没有使用正则表达式，则不需要使用AliasMatch，有可能会造成重定向次数过多，导致无法访问。
+
+配置示例： 
+
+1. 在conf/extra/目录下新建一个httpd-test.conf文件
+[root@vm3 conf]# cat extra/httpd-test.conf 
+AliasMatch /test/(.*)\.jpg$	/data/test/images/jpg/$1.jpg
+AliasMatch /test/(.*)\.png$	/data/test/images/png/$1.png
+
+<Directory "/data/test/images/*">
+	AllowOverride None
+	Options None
+	Order allow,deny
+	Allow from all
+</Directory>
+[root@vm3 conf]# 
+
+2. 将该文件在httpd.conf中Include进来
+[root@vm3 conf]# grep 'httpd-test' httpd.conf 
+Include conf/extra/httpd-test.conf
+[root@vm3 conf]# 
+
+3. /data目录结构
+[root@vm3 images]# tree /data/
+/data/
+└── test
+    ├── images
+    │?? ├── jpg
+    │?? │?? └── 1.jpg
+    │?? └── png
+    │??     └── 1.png
+    └── index.html
+
+4 directories, 3 files
+[root@vm3 images]#
+
+4. 测试
+在LogFormat中增加[Filename]:%f，方便查看日志，设置如下
+LogFormat "%h %l %u %t \"%r\" %>s %b [Filename]:%f" common
+
+访问日志如下：
+172.17.100.254 - - [12/Oct/2016:10:28:20 +0800] "GET /test/1.png HTTP/1.1" 304 - [Filename]:/data/test/images/png/1.png
+172.17.100.254 - - [12/Oct/2016:10:28:27 +0800] "GET /test/1.jpg HTTP/1.1" 200 2762 [Filename]:/data/test/images/jpg/1.jpg
+
+```
+
+* ScriptAlias
+```
+作用：映射URL到本地文件系统，并且将目标作为CGI脚本来执行。
+语法：ScriptAlias <url-path> <file-path | directory-path>
+
+示例：
+ScriptAlias /cgi-bin/ /web/cgi-bin/
+<Directory /web/cgi-bin >
+	SetHandler cgi-script
+	Options ExecCGI
+</Directory>
+```
+
+* ScriptAliasMatch
+```
+作用：使用正则表达式映射URL到本地文件系统，并且将目标作为CGI脚本来执行。
+语法：ScriptAliasMatch <url-path-regexp> <file-path | directory-path>
+
+示例：
+ScriptAliasMatch ^/cgi-bin(.*) /usr/local/apache/cgi-bin$1
+```
+
+* Redirect
+```
+作用：发送一个外部的重定向，要求客户端获取一个不同的URL。
+语法：Redirect [status]  URL-PATH  URL
+
+status可以是如下部分：
+permanent：永久重定向。301。等同于：RedirectPermanent 指令
+temp：临时重定向。302，默认的。等同于RedirectTemp指令。
+seeother：返回一个see other状态,表明该资源已经被替换。303
+gone：返回一个410状态码。表明该资源被永久性移除。
+
+示例：
+Redirect /service http://foo2.example.com/service
+Redirect permanent /service http://foo2.example.com/service
+Redirect temp /service http://foo2.example.com/service
+Redirect 301 /service http://foo2.example.com/service
+RedirectPermanent /service http://foo2.example.com/service
+```
