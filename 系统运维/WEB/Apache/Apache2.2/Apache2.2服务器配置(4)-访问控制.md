@@ -104,6 +104,40 @@ Deleting password for user test02
 [root@vm3 apache22]# 
 ```
 
+* 用户认证(Require group)
+
+```
+组文件格式：
+groupname1: user1 user2 user3 ...
+groupname2: user4 user5 user6 ...
+...
+
+```
+
+```
+httpd.conf配置：AuthUserFile和AuthGroupFile需要同时指定
+<Directory "/tmp/download">
+        Options Indexes
+        AllowOverride AuthConfig
+        AuthType Basic
+        AuthName "Test Auth"
+        AuthBasicProvider file
+        AuthUserFile auth/.htpasswd
+        AuthGroupFile auth/.htgroup
+        Require group group1
+        #Satisfy All
+        Order deny,allow
+        Deny from all
+        Allow from 172.17.100.0/24
+</Directory>
+
+组文件配置
+[root@vm2 www]# cat /usr/local/source/apache22/auth/.htgroup
+group1: test1
+group2: test2
+[root@vm2 www]# 
+```
+
 ## Digest认证(推荐结合SSL)
 * 配置参数介绍
 ```
@@ -193,3 +227,297 @@ Deleting password for user test04
 [root@vm3 apache22]#
 
 ```
+
+# Apache使用MySQL数据库实现认证
+* 所需软件
+mod_auth_mysql
+
+[下载链接](https://sourceforge.net/projects/modauthmysql/files/)
+
+[参考链接](http://modauthmysql.sourceforge.net/)
+
+* 补丁文件
+
+>下面的补丁文件应该和mod_auth_mysql位于同一目录下。
+
+
+```
+Index: mod_auth_mysql-3.0.0/mod_auth_mysql.c
+===================================================================
+--- mod_auth_mysql-3.0.0.orig/mod_auth_mysql.c
++++ mod_auth_mysql-3.0.0/mod_auth_mysql.c
+@@ -206,7 +206,7 @@
+   #define SNPRINTF apr_snprintf
+   #define PSTRDUP apr_pstrdup
+   #define PSTRNDUP apr_pstrndup
+-  #define STRCAT ap_pstrcat
++  #define STRCAT apr_pstrcat
+   #define POOL apr_pool_t
+   #include "http_request.h"   /* for ap_hook_(check_user_id | auth_checker)*/
+   #include "ap_compat.h"
+@@ -237,7 +237,7 @@
+   #define SNPRINTF ap_snprintf
+   #define PSTRDUP ap_pstrdup
+   #define PSTRNDUP ap_pstrndup
+-  #define STRCAT ap_pstrcat
++  #define STRCAT apr_pstrcat
+   #define POOL pool
+   #include <stdlib.h>
+   #include "ap_sha1.h"
+@@ -589,87 +589,87 @@ static void * create_mysql_auth_dir_conf
+ static
+ command_rec mysql_auth_cmds[] = {
+	AP_INIT_TAKE1("AuthMySQLHost", ap_set_string_slot,
+-	(void *) APR_XtOffsetOf(mysql_auth_config_rec, mysqlhost),
++	(void *) APR_OFFSETOF(mysql_auth_config_rec, mysqlhost),
+	OR_AUTHCFG, "mysql server host name"),
+ 
+	AP_INIT_TAKE1("AuthMySQLPort", ap_set_int_slot,
+-	(void *) APR_XtOffsetOf(mysql_auth_config_rec, mysqlport),
++	(void *) APR_OFFSETOF(mysql_auth_config_rec, mysqlport),
+	OR_AUTHCFG, "mysql server port number"),
+ 
+	AP_INIT_TAKE1("AuthMySQLSocket", ap_set_string_slot,
+-	(void *) APR_XtOffsetOf(mysql_auth_config_rec, mysqlsocket),
++	(void *) APR_OFFSETOF(mysql_auth_config_rec, mysqlsocket),
+	OR_AUTHCFG, "mysql server socket path"),
+ 
+	AP_INIT_TAKE1("AuthMySQLUser", ap_set_string_slot,
+-	(void *) APR_XtOffsetOf(mysql_auth_config_rec, mysqluser),
++	(void *) APR_OFFSETOF(mysql_auth_config_rec, mysqluser),
+	OR_AUTHCFG, "mysql server user name"),
+ 
+	AP_INIT_TAKE1("AuthMySQLPassword", ap_set_string_slot,
+-	(void *) APR_XtOffsetOf(mysql_auth_config_rec, mysqlpasswd),
++	(void *) APR_OFFSETOF(mysql_auth_config_rec, mysqlpasswd),
+	OR_AUTHCFG, "mysql server user password"),
+ 
+	AP_INIT_TAKE1("AuthMySQLDB", ap_set_string_slot,
+-	(void *) APR_XtOffsetOf(mysql_auth_config_rec, mysqlDB),
++	(void *) APR_OFFSETOF(mysql_auth_config_rec, mysqlDB),
+	OR_AUTHCFG, "mysql database name"),
+ 
+	AP_INIT_TAKE1("AuthMySQLUserTable", ap_set_string_slot,
+-	(void *) APR_XtOffsetOf(mysql_auth_config_rec, mysqlpwtable),
++	(void *) APR_OFFSETOF(mysql_auth_config_rec, mysqlpwtable),
+	OR_AUTHCFG, "mysql user table name"),
+ 
+	AP_INIT_TAKE1("AuthMySQLGroupTable", ap_set_string_slot,
+-	(void *) APR_XtOffsetOf(mysql_auth_config_rec, mysqlgrptable),
++	(void *) APR_OFFSETOF(mysql_auth_config_rec, mysqlgrptable),
+	OR_AUTHCFG, "mysql group table name"),
+ 
+	AP_INIT_TAKE1("AuthMySQLNameField", ap_set_string_slot,
+-	(void *) APR_XtOffsetOf(mysql_auth_config_rec, mysqlNameField),
++	(void *) APR_OFFSETOF(mysql_auth_config_rec, mysqlNameField),
+	OR_AUTHCFG, "mysql User ID field name within User table"),
+ 
+	AP_INIT_TAKE1("AuthMySQLGroupField", ap_set_string_slot,
+-	(void *) APR_XtOffsetOf(mysql_auth_config_rec, mysqlGroupField),
++	(void *) APR_OFFSETOF(mysql_auth_config_rec, mysqlGroupField),
+	OR_AUTHCFG, "mysql Group field name within table"),
+ 
+	AP_INIT_TAKE1("AuthMySQLGroupUserNameField", ap_set_string_slot,
+-	(void *) APR_XtOffsetOf(mysql_auth_config_rec, mysqlGroupUserNameField),
++	(void *) APR_OFFSETOF(mysql_auth_config_rec, mysqlGroupUserNameField),
+	OR_AUTHCFG, "mysql User ID field name within Group table"),
+ 
+	AP_INIT_TAKE1("AuthMySQLPasswordField", ap_set_string_slot,
+-	(void *) APR_XtOffsetOf(mysql_auth_config_rec, mysqlPasswordField),
++	(void *) APR_OFFSETOF(mysql_auth_config_rec, mysqlPasswordField),
+	OR_AUTHCFG, "mysql Password field name within table"),
+ 
+	AP_INIT_TAKE1("AuthMySQLPwEncryption", ap_set_string_slot,
+-	(void *) APR_XtOffsetOf(mysql_auth_config_rec, mysqlEncryptionField),
++	(void *) APR_OFFSETOF(mysql_auth_config_rec, mysqlEncryptionField),
+	OR_AUTHCFG, "mysql password encryption method"),
+ 
+	AP_INIT_TAKE1("AuthMySQLSaltField", ap_set_string_slot,
+-	(void*) APR_XtOffsetOf(mysql_auth_config_rec, mysqlSaltField),
++	(void*) APR_OFFSETOF(mysql_auth_config_rec, mysqlSaltField),
+	OR_AUTHCFG, "mysql salfe field name within table"),
+ 
+ /*	AP_INIT_FLAG("AuthMySQLKeepAlive", ap_set_flag_slot,
+-	(void *) APR_XtOffsetOf(mysql_auth_config_rec, mysqlKeepAlive),
++	(void *) APR_OFFSETOF(mysql_auth_config_rec, mysqlKeepAlive),
+	OR_AUTHCFG, "mysql connection kept open across requests if On"),
+ */
+	AP_INIT_FLAG("AuthMySQLAuthoritative", ap_set_flag_slot,
+-	(void *) APR_XtOffsetOf(mysql_auth_config_rec, mysqlAuthoritative),
++	(void *) APR_OFFSETOF(mysql_auth_config_rec, mysqlAuthoritative),
+	OR_AUTHCFG, "mysql lookup is authoritative if On"),
+ 
+	AP_INIT_FLAG("AuthMySQLNoPasswd", ap_set_flag_slot,
+-	(void *) APR_XtOffsetOf(mysql_auth_config_rec, mysqlNoPasswd),
++	(void *) APR_OFFSETOF(mysql_auth_config_rec, mysqlNoPasswd),
+	OR_AUTHCFG, "If On, only check if user exists; ignore password"),
+ 
+	AP_INIT_FLAG("AuthMySQLEnable", ap_set_flag_slot,
+-	(void *) APR_XtOffsetOf(mysql_auth_config_rec, mysqlEnable),
++	(void *) APR_OFFSETOF(mysql_auth_config_rec, mysqlEnable),
+	OR_AUTHCFG, "enable mysql authorization"),
+ 
+	AP_INIT_TAKE1("AuthMySQLUserCondition", ap_set_string_slot,
+-	(void *) APR_XtOffsetOf(mysql_auth_config_rec, mysqlUserCondition),
++	(void *) APR_OFFSETOF(mysql_auth_config_rec, mysqlUserCondition),
+	OR_AUTHCFG, "condition to add to user where-clause"),
+ 
+	AP_INIT_TAKE1("AuthMySQLGroupCondition", ap_set_string_slot,
+-	(void *) APR_XtOffsetOf(mysql_auth_config_rec, mysqlGroupCondition),
++	(void *) APR_OFFSETOF(mysql_auth_config_rec, mysqlGroupCondition),
+	OR_AUTHCFG, "condition to add to group where-clause"),
+ 
+	AP_INIT_TAKE1("AuthMySQLCharacterSet", ap_set_string_slot,
+-	(void *) APR_XtOffsetOf(mysql_auth_config_rec, mysqlCharacterSet),
++	(void *) APR_OFFSETOF(mysql_auth_config_rec, mysqlCharacterSet),
+	OR_AUTHCFG, "mysql character set to be used"),
+ 
+   { NULL }
+
+```
+
+* 对mod_auth_mysql.c打补丁
+```
+[root@vm3 mod_auth_mysql-3.0.0]# yum install -y patch
+
+[root@vm3 mod_auth_mysql-3.0.0]# patch < mod_auth_mysql_3.0.0_patch_apache2.2.diff 
+patching file mod_auth_mysql.c
+[root@vm3 mod_auth_mysql-3.0.0]# 
+```
+
+* 修改mod_auth_mysql.c(如果编译错误就不需要修改此步骤)
+
+>找到908行，将remote_ip改为client_ip，保存即可。
+
+
+* 编译mod_auth_mysql
+```
+[root@vm3 mod_auth_mysql-3.0.0]# /usr/local/source/apache22/bin/apxs -c -L /usr/lib64/mysql/ -I /usr/include/mysql/ -lmysqlclient -lm -lz mod_auth_mysql.c 
+
+说明：
+-L：指定libmysqlclient.so这个库文件所在的路径。
+-I：指定mysql.h头文件所在的位置
+```
+
+* 安装mod_auth_mysql
+```
+[root@vm3 mod_auth_mysql-3.0.0]# /usr/local/source/apache22/bin/apxs -i mod_auth_mysql.la 
+
+[root@vm3 mod_auth_mysql-3.0.0]# ls -l /usr/local/source/apache22/modules/mod_auth_mysql.so 
+-rwxr-xr-x 1 root root 72138 Oct 12 13:25 /usr/local/source/apache22/modules/mod_auth_mysql.so
+[root@vm3 mod_auth_mysql-3.0.0]# 
+```
+
+* 配置参数
+```
+Configuration Parameter		Option				Valid Values (1)(2)
+-----------------------		------				------------
+AuthMySQLHost				HOST				"localhost", host name or ip address
+AuthMySQLPort				PORT				integer port number
+AuthMySQLSocket				SOCKET				full path name of UNIX socket to use
+AuthMySQLUser				USER				MySQL user id
+AuthMySQLPassword			PASSWORD			MySQL password
+AuthMySQLDB					DB					MySQL database
+AuthMySQLPwTable			PWTABLE				MySQL table to use
+AuthMySQlNameField			NAMEFIELD			MySQL column name
+AuthMySQLPasswordField		PASSWORDFIELD		MySQL column name
+AuthMySQLPwEncryption		ENCRYPTION (3)		"none", "crypt", "scrambled", "md5", "aes", "sha1"
+AuthMySQLSaltField			SALT				"<>", <string> or MySQL column name
+AuthMySQLKeepAlive			KEEPALIVE			"0", "1"
+AuthMySQLAuthoritative		AUTHORITATIVE		"0", "1"
+AuthMySQLNoPassword			NOPASSWORD			"0", "1"
+AuthMySQLEnable				ENABLE				"0", "1"
+AuthMySQLCharacterSet		CHARACTERSET		MySQL character set to use
+```
+
+* MySQL配置
+```
+1. 创建数据库
+mysql> create database apache;
+Query OK, 1 row affected (0.14 sec)
+
+mysql> 
+
+2. 创建表结构
+说明：这里面password字段设置为128位，是要使用MD5加密的。
+mysql> use apache
+Database changed
+mysql> create table apache22 (
+    -> username varchar(30) NOT NULL,
+    -> password char(128) NOT NULL,
+    -> usergroup varchar(30),
+    -> primary key (username)
+    -> );
+Query OK, 0 rows affected (0.12 sec)
+
+mysql> 
+
+3. 插入数据
+mysql> insert into apache22 values ('mysql-test01', md5('test01'), 'test');
+Query OK, 1 row affected (0.10 sec)
+
+mysql> select * from apache22;
++--------------+----------------------------------+-----------+
+| username     | password                         | usergroup |
++--------------+----------------------------------+-----------+
+| mysql-test01 | 0e698a8ffc1a0af622c7b4db3cb750cc | test      |
++--------------+----------------------------------+-----------+
+1 row in set (0.00 sec)
+
+mysql> 
+
+
+4. 创建用户并授权
+mysql> grant all privileges on apache.* to 'apache'@'172.17.100.%' identified by 'apache';
+Query OK, 0 rows affected (0.12 sec)
+
+mysql> flush privileges;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> 
+
+```
+
+* 配置httpd
+```
+1. 载入模块
+LoadModule mysql_auth_module modules/mod_auth_mysql.so
+
+2. 配置目录认证
+Alias /test	/data/test
+
+<Directory "/data/test">
+	AllowOverride AuthConfig
+	Options None
+	Order allow,deny
+	Allow from all
+
+	AuthType Basic
+	AuthName "MySQL Auth"
+	AuthUserFile /dev/null
+	AuthBasicAuthoritative off
+	AuthMySQLEnable On
+	AuthMySQLHost 172.17.100.3
+	AuthMySQLPort 3306
+	AuthMySQLUser apache
+	AuthMySQLPassword apache
+	AuthMySQLDB apache
+	AuthMySQLUserTable apache22
+	AuthMySQLNameField username
+	AuthMySQLPasswordField password
+	AuthMySQLGroupField usergroup
+	AuthMySQLPwEncryption md5
+	Require valid-user
+</Directory>
+
+3. 重启服务
+[root@vm3 conf]# /etc/init.d/httpd restart
+Stopping httpd:                                            [  OK  ]
+Starting httpd:                                            [  OK  ]
+[root@vm3 conf]# 
+
+```
+
+* 测试
+
+![MySQL认证](https://github.com/felix1115/Docs/blob/master/Images/apache22-3.png)
