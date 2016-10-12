@@ -85,6 +85,7 @@ Starting httpd:                                            [  OK  ]
 ```
 
 * 测试
+
 ![Basic认证](https://github.com/felix1115/Docs/blob/master/Images/apache22-1.png)
 
 
@@ -166,6 +167,7 @@ Starting httpd:                                            [  OK  ]
 ```
 
 * 测试
+
 ![Digest认证](https://github.com/felix1115/Docs/blob/master/Images/apache22-2.png)
 
 * 添加和删除用户
