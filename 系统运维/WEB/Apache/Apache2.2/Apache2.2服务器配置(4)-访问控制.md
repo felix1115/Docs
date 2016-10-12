@@ -27,7 +27,65 @@ Require valid-user：允许有效的用户访问。
 Satisfy：可以是All或者是Any。默认是All。作用是：如果同时启用了Allow（主机的访问控制）和Require（用户访问控制），如果设置为All，则表示必须是从允许的主机，并且输入正确的用户名和密码才行。而如果是Any，则表示来自允许的主机或者是输入了正确的用户名或者是密码都可以。
 ```
 
+* 产生密码文件htpasswd
+```
+产生密码文件使用的是htpasswd命令。
+
+命令用法
+Usage:
+        htpasswd [-cmdpsD] passwordfile username
+        htpasswd -b[cmdpsD] passwordfile username password
+        htpasswd -n[mdps] username
+        htpasswd -nb[mdps] username password
+ -c  Create a new file.
+ -n  Don't update file; display results on stdout.
+ -m  Force MD5 encryption of the password (default).
+ -d  Force CRYPT encryption of the password.
+ -p  Do not encrypt the password (plaintext).
+ -s  Force SHA encryption of the password.
+ -b  Use the password from the command line rather than prompting for it.
+ -D  Delete the specified user.
+On other systems than Windows, NetWare and TPF the '-p' flag will probably not work.
+The SHA algorithm does not use a salt and is less secure than the MD5 algorithm.
+
+初次使用该命令时，需要使用-c选项，非第一次使用该命令时，不要使用-c选项。
+```
+
 * 配置示例
+```
+Alias /test	/data/test
+
+<Directory "/data/test">
+	AllowOverride AuthConfig
+	Options None
+	Order allow,deny
+	Allow from all
+	AuthType Basic
+	AuthName "Test Auth"
+	AuthUserFile "/usr/local/source/apache22/conf/.auth_config"
+	AuthBasicProvider file
+	Require valid-user
+	Satisfy All
+</Directory>
+```
+
+```
+[root@vm3 apache22]# /usr/local/source/apache22/bin/htpasswd -c /usr/local/source/apache22/conf/.auth_config test01
+New password: 
+Re-type new password: 
+Adding password for user test01
+[root@vm3 apache22]# 
+```
+
+```
+[root@vm3 apache22]# /etc/init.d/httpd restart
+Stopping httpd:                                            [  OK  ]
+Starting httpd:                                            [  OK  ]
+[root@vm3 apache22]# 
+```
+
+* 测试
+![Basic认证](https://github.com/felix1115/Docs/blob/master/images/apapache22-1.png)
 
 
 ## Digest认证(推荐结合SSL)
