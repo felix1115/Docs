@@ -1,9 +1,34 @@
 # .htaccess文件
 
->该文件由AccessFileName定义。提供了基于
+>该文件由AccessFileName定义。提供了基于每一个目录来改变配置文件的功能。位于该文件中的指令允许覆盖httpd所配置的指令，只能够使用在Directory段中。其中AllowOverride后面所跟的参数控制了.htaccess文件中的指令类型。
 
 ```
+AllowOverride可以跟的指令类型(可以跟上多个)
 
+1. AuthConfig
+	允许使用认证相关的指令。如AuthType、AuthName、AuthUserFile、AuthGroupFile等
+
+2. FileInfo
+	允许使用控制文档类型的指令。如DefaultType、ErrorDocument、ForceType、SetHandler等。
+	允许使用文档元数据相关的指令。如Header、RequestHeader、BrowseMatch等。
+	允许使用mod_rewrite模块相关的指令。如RewriteEngine、RewriteOptions、RewriteBase等。
+	允许使用mod_alias模块相关的指令。如Redirect、Alias、RedirectTemp等。
+	
+3. Indexes
+	允许使用控制目录索引的指令。如AddIcon、DefaultIcon、AddDescription等。
+	
+4. Limit
+	允许使用控制主机访问的指令。如Order、Allow、Deny等。
+	
+```
+
+```
+当启用.htaccess文件时，如果用户访问/www/htdocs/example这个目录下的内容，httpd会查找以下目录的.htaccess文件：
+
+1. /.htaccess
+2. /www/.htaccess
+3. /www/htdocs/.htaccess
+4. /www/htdocs/example/.htaccess
 ```
 
 # 目录访问认证
@@ -35,19 +60,6 @@ Deny from all：拒绝所有
 1. 当只匹配其中之一时，则按照所匹配的规则执行。如只匹配allow，则执行Allow，如果只匹配了Deny，则执行deny规则。
 2. 如果都没有匹配时，则执行默认的规则。如果配置的是Order allow,deny则默认规则是deny。如果配置的是Order deny,allow则默认规则是allow。
 3. 如果allow和deny都匹配时，则执行默认规则。 
-```
-
-* /path/to/somewhere的使用
-	- 通配符
-```
-
-
-```
-
-	- 正则表达式
-	
-```
-
 ```
 
 # 用户访问认证
