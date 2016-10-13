@@ -62,6 +62,19 @@ Deny from all：拒绝所有
 3. 如果allow和deny都匹配时，则执行默认规则。 
 ```
 
+* Allow和Deny的地址格式
+```
+1. Allow from 10.1.1.1
+2. Allow from 10 172.20 192.168.1
+3. Allow from 172.17.100.0/255.255.255.0
+4. Allow from 172.17.100.0/24
+5. Allow from all
+
+SetEnvIf User-Agent ^KnockKnock/2\.0 let_me_in
+6. Allow from env=let_me_in
+
+```
+
 # 用户访问认证
 
 >AllowOverride至少需要设置为AuthConfig
