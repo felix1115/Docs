@@ -6,6 +6,48 @@
 
 ```
 
+# 目录访问认证
+
+* Directory的配置
+```
+<Directory  /path/to/somewhere> </Directory>
+作用：定义目录的访问权限。在Directory中所定义的所有指令将会应用到该目录、子目录及其里面的内容。
+
+Options：定义DocumentRoot的特性的。有如下特性：
+    None：不启用任何特性。
+    All：除了MultiViews之外的所有特性。
+    ExecCGI：允许使用mod_cgi模块执行cgi脚本的权限。
+    FollowSymLinks：默认设置，在目录中允许追踪符号链接，可以允许访问DocumentRoot外的文件。不安全。
+    Indexes：允许列出索引。不安全，不应该允许Indexes。
+    Includes：允许执行服务端包含（SSI）
+    SymLinksIfOwnerMatch：只允许那些和符号连接具有相同的拥有者的文件或目录可以被访问。
+    MultiViews：允许内容协商。
+AllowOverride：在AllowOverride设置为 None 时，该目录及其子目录下的.htaccess 文件将被完全忽略，禁止读取.htaccess文件的内容。
+当此指令设置为 All 时，所有具有“.htaccess” 作用域的指令都允许出现在 .htaccess 文件中。
+Order：用于定义基于主机的访问控制顺序。如allow,deny或者是deny,allow。写在最后的一个为默认策略。
+Allow from all：允许所有
+Deny from all：拒绝所有
+```
+
+* Allow和Deny的顺序问题
+```
+不管Order配置的是Order allow,deny还是Order deny,allow  都遵循以下规则。
+1. 当只匹配其中之一时，则按照所匹配的规则执行。如只匹配allow，则执行Allow，如果只匹配了Deny，则执行deny规则。
+2. 如果都没有匹配时，则执行默认的规则。如果配置的是Order allow,deny则默认规则是deny。如果配置的是Order deny,allow则默认规则是allow。
+3. 如果allow和deny都匹配时，则执行默认规则。 
+```
+
+* /path/to/somewhere的使用
+- 通配符
+```
+
+
+```
+
+- 正则表达式
+```
+
+```
 
 # 用户访问认证
 
