@@ -58,7 +58,7 @@ e is 65537 (0x10001)
 ```
 说明：证书名默认是cacert.pem
 
-[root@vm1 ~]# openssl req -new -x509 -key /etc/pki/CA/private/cakey.pem -out /etc/pki/CA/cacert.pem -days 3650
+[root@vm1 ~]# openssl req -sha256 -new -x509 -key /etc/pki/CA/private/cakey.pem -out /etc/pki/CA/cacert.pem -days 3650
 You are about to be asked to enter information that will be incorporated
 into your certificate request.
 What you are about to enter is what is called a Distinguished Name or a DN.
@@ -170,48 +170,32 @@ apache22-felix_com.csr                                                          
 
 * CA签发证书
 ```
-命令：openssl ca -in csr/apache22-felix_com.csr -out apache22-https.crt
+命令：[root@vm01 CA]# openssl x509 -req -days 365 -in apache22-felix_com.csr -CA cacert.pem -CAkey private/cakey.pem -sha256 -out apache22-felix_com.crt -CAserial serial 
 
-[root@vm01 CA]# openssl ca -in csr/apache22-felix_com.csr -out apache22-https.crt
-Using configuration from /etc/pki/tls/openssl.cnf
-Check that the request matches the signature
+[root@vm01 CA]# openssl x509 -req -days 365 -in apache22-felix_com.csr -CA cacert.pem -CAkey private/cakey.pem -sha256 -out apache22-felix_com.crt -CAserial serial 
 Signature ok
-Certificate Details:
-        Serial Number: 1 (0x1)
-        Validity
-            Not Before: Oct 13 09:14:38 2016 GMT
-            Not After : Oct 13 09:14:38 2017 GMT
-        Subject:
-            countryName               = CN
-            stateOrProvinceName       = BeiJing
-            organizationName          = felix
-            organizationalUnitName    = IT Dept
-            commonName                = *.felix.com
-            emailAddress              = admin@felix.com
-        X509v3 extensions:
-            X509v3 Basic Constraints: 
-                CA:FALSE
-            Netscape Comment: 
-                OpenSSL Generated Certificate
-            X509v3 Subject Key Identifier: 
-                DC:FA:EA:5E:1D:82:B6:E1:F1:45:09:60:15:32:DF:25:88:17:FC:4B
-            X509v3 Authority Key Identifier: 
-                keyid:68:2B:E8:D5:20:9E:20:F9:C7:B2:3D:7F:80:75:53:E6:12:E4:AD:3A
+subject=/C=CN/ST=BeiJing/L=BeiJing/O=felix/OU=IT Dept/CN=*.felix.com/emailAddress=admin@felix.com
+Getting CA Private Key
+[root@vm01 CA]#
 
-Certificate is to be certified until Oct 13 09:14:38 2017 GMT (365 days)
-Sign the certificate? [y/n]:y
+选项说明：
+-CA：指定CA证书的位置。
+-CAkey：指定CA私钥的位置。
+-sha256：指定签发SHA256的证书，如果没有指定，则为sha1的证书。
+-in：要签发的CSR证书文件。
+-out：签发的证书名。
+-CAserial：指定CA证书序列号的文件。如果不指定，则会报错，除非serial文件为cacert.srl
 
+```
 
-1 out of 1 certificate requests certified, commit? [y/n]y
-Write out database with 1 new entries
-Data Base Updated
-[root@vm01 CA]# 
-
+* 查看签发的证书信息
+```
+[root@vm01 CA]# openssl x509 -in apache22-felix_com.crt -noout -text
 ```
 
 * 将证书传到服务器端
 ```
-[root@vm01 CA]# scp apache22-https.crt root@172.17.100.3:/usr/local/source/apache22/ssl/
+[root@vm01 CA]# scp apache22-felix_com.crt root@172.17.100.3:/usr/local/source/apache22/ssl/
 Enter passphrase for key '/root/.ssh/id_rsa': 
 root@172.17.100.3's password: 
 apache22-https.crt                                                                                                                                         100% 4604     4.5KB/s   00:00    
