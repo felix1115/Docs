@@ -186,6 +186,7 @@ LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combine
 %k：在同一个连接中处理的请求数。
 %l：远程用户的登陆名。如果没有，则显示"-"
 %m：客户端所使用的请求方式。如GET/POST/PUT/DELETE等
+%{Foobar}n：来自其他模块的note Foobar的内容
 %p：服务器处理请求的标准端口。
 %P：服务器处理请求的子进程PID。
 %q：查询字符串。
@@ -229,7 +230,7 @@ Alias /image/ /data/www/image/
 
 配置示例
 1. 在conf/extra/目录下新建一个httpd-test.conf文件
-[root@vm3 conf]# more extra/httpd-test.conf 
+[root@vm3 conf]# more extra/httpd-test.conf
 Alias /test/	/data/test/
 
 <Directory "/data/test">
@@ -346,4 +347,125 @@ Redirect permanent /service http://foo2.example.com/service
 Redirect temp /service http://foo2.example.com/service
 Redirect 301 /service http://foo2.example.com/service
 RedirectPermanent /service http://foo2.example.com/service
+```
+
+* ErrorDocument
+```
+作用：当遇到错误时，根据错误代码返回特定的信息。
+格式：ErrorDocument <3-digit-number-error-code> <document>
+说明：
+3-digit-number-error-code：表示的是3位数字错误代码。如403、404、500等。
+document：表示返回的错误信息。可以是文本信息(使用引号引起来。如"page not found")、本地的URL页面(/index.html)、外部的URL页面(如http://x.x.x.x/index.html)
+
+示例1：显示文本信息
+ErrorDocument 404 "<h1><i>Page Not Found!!!</i></h1>"
+
+示例2：本地URL
+ErrorDocument 403 /index.html
+
+示例3：外部URL
+ErrorDocument 500 http://x.x.x.x/index.html
+```
+
+# mod_deflate模块
+```
+作用：启用Gzip的压缩输出。
+
+1. 载入模块
+LoadModule deflate_module modules/mod_deflate.so
+
+2. 启用压缩输出
+SetOutputFilter DEFLATE
+
+关闭压缩输出：
+SetOutputFilter INFLATE
+
+3. 其他配置选项
+DeflateCompressionLevel <1-9>：指定压缩等级。数字越小，压缩比越差。
+DeflateBufferSize 8096：指定zlib一次可以压缩的数据大小。单位为字节。默认为8096字节。
+DeflateMemLevel <1-9>：指定zlib在进行压缩时可以使用多少的内存。默认为9.
+AddOutputFilterByType：指定zlib可以压缩的数据类型。
+DeflateFilterNote：在日志文件中记录压缩相关的信息。格式为：DeflateFilterNote [type] <notename>
+	type如下：
+	Input：将输入流的字节数存储在note中。
+	Output：将输出流的字节数存储在note中。
+	Ratio：将压缩比(output/input * 100)存储在note中。
+
+
+配置示例：
+LoadModule deflate_module modules/mod_deflate.so
+<IfModule deflate_module>
+	SetOutputFilter DEFLATE
+	AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/x-javascript
+	DeflateCompressionLevel 6
+	DeflateBufferSize 8096
+	DeflateMemLevel 9
+	DeflateFilterNote Input instream
+	DeflateFilterNote Output outstream
+	DeflateFilterNote Ratio ratio
+
+	LogFormat '"%r" %{outstream}n/%{instream}n (%{ratio}n%%)' deflate
+	CustomLog logs/deflate_log deflate
+</IfModule>
+
+```
+
+# mod_expires模块
+```
+作用：设置文件的缓存时间
+
+1. 载入模块
+LoadModule expires_module modules/mod_expires.so
+
+2. 启用缓存功能
+ExpiresActive On
+
+关闭缓存功能
+ExpiresActive Off
+
+3. 设置指定MIME类型的文件的过期时间
+语法格式：ExpiresByType <MIME-Type> <code>seconds
+code类型有：A表示以客户端访问该类型的文档的时间作为base time。M表示以文件的修改时间作为base time。
+
+如：
+ExpiresByType text/html	M604800  表示的是HTML文档将会在其修改时间后的604800秒(一周)过期。
+
+4. 设置所有文档的默认过期时间
+语法格式：ExpiresDefault <code>seconds
+code类型有：A表示以客户端访问该类型的文档的时间作为base time。M表示以文件的修改时间作为base time。
+说明：该指定所设置的时间可以被ExpiresByType所覆盖。
+
+也可以使用如下方法设置：
+ExpiresDefault "base [plus num type] [num type] ..."
+ExpiresByType type/encoding "base [plus num type] [num type] ..."
+base可以是：access、now、modification
+num：是一个整数。
+type：可以是years/months/weeks/days/hours/minutes/seconds
+示例：
+ExpiresDefault "access plus 1 month"
+ExpiresByType text/html "access plus 1 month 15 days 2 hours"
+ExpiresByType image/gif "modification plus 5 hours 3 minutes
+
+
+配置示例1：
+LoadModule expires_module modules/mod_expires.so
+<IfModule expires_module>
+	ExpiresActive On
+	ExpiresByType text/html	M259200
+	ExpiresByType text/css  M259200
+	ExpiresByType text/plain  M259200
+	ExpiresByType text/xml  M259200
+	ExpiresByType text/javascript  M259200
+	ExpiresByType application/javascript  M259200
+	ExpiresByType application/x-javascript  M259200
+	ExpiresDefault M86400
+</IfModule>
+
+配置示例2：
+<IfModule expires_module>
+	<FilesMatch \.(jpg|png|jpe?g|html|css|js|xml)$>
+		ExpiresActive On
+		ExpiresDefault A604800
+	</FilesMatch>
+</IfModule>
 ```
