@@ -468,4 +468,34 @@ LoadModule expires_module modules/mod_expires.so
 		ExpiresDefault A604800
 	</FilesMatch>
 </IfModule>
+```response header field 
+
+# FileETag
+```
+作用：基于文件属性在HTTP响应头中为静态文件增加ETag字段。ETag被用于缓存管理，判断静态文件有没有发生变化。
+
+计算ETag时使用的文件属性：INode、MTime、Size,这些都是默认设置。
+INode：文件的i-node号。
+MTime：文件的修改时间。
+Size：文件的大小。
+All：INode、MTime、Size
+None：在HTTP Response Header中不增加ETag字段。
+
+```
+
+* ETag工作原理
+```
+Etag由服务器端生成，客户端通过If-Match或者说If-None-Match这个条件判断请求来验证资源是否修改。常见的是使用If-None-Match.请求一个文件的流程可能如下：
+
+====第一次请求===
+1.客户端发起 HTTP GET 请求一个文件；
+2.服务器处理请求，返回文件内容和一堆Header，当然包括Etag(例如"2e681a-6-5d044840")(假设服务器支持Etag生成和已经开启了Etag).状态码200
+
+====第二次请求===
+1.客户端发起 HTTP GET 请求一个文件，注意这个时候客户端同时发送一个If-None-Match头，这个头的内容就是第一次请求时服务器返回的Etag：2e681a-6-5d044840
+2.服务器判断发送过来的Etag和计算出来的Etag匹配，因此If-None-Match为False，不返回200，返回304，客户端继续使用本地缓存；
+
+流程很简单，问题是，如果服务器又设置了Cache-Control:max-age和Expires呢，怎么办？
+答案是同时使用，也就是说在完全匹配If-Modified-Since和If-None-Match即检查完修改时间和Etag之后，服务器才能返回304.(不要陷入到底使用谁的问题怪圈)
+
 ```
