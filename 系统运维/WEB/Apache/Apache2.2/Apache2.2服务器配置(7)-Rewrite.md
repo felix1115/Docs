@@ -152,3 +152,49 @@ OR：表示各个RewriteCond之间的判断条件为OR,而不是默认的AND。
 ![RewriteCond配置示例](https://github.com/felix1115/Docs/blob/master/Images/rewrite-1.png)
 
 * RewriteRule
+![RewriteRule语法](https://github.com/felix1115/Docs/blob/master/Images/rewrite-2.png)
+
+```
+1. Pattern
+表示使用正则表达式匹配的请求的URL路径。
+
+匹配的含义
+* Rewrite使用在虚拟主机中：Pattern表示匹配的是在host和port之后，query string之前的URL。如：/app1/index.html
+* Rewrite使用在Directory和.htaccess中：Pattern表示去掉前导的"/"之后的文件系统路径。如app/index.html或者是index.html，这个依赖于Rewrite指令所定义的位置。
+
+如果要想使用.htaccess中配置Rewrite，需要在目录中启用FollowSymLinks,并在.htaccess中启用RewriteEngin On。
+
+2. Substitution 
+用于替换被Pattern匹配的URL。
+Substitution 可以是如下内容：
+	* 文件系统路径。指定资源在文件系统中的位置。
+	* URL路径。rewrite将会根据所指定的路径的第一部分判断该路径是相对于DocumentRoot的URL路径还是文件系统路径。如果用户指定的路径(如/www/index.html)的第一部分(/www)存在于根文件系统上，则为文件系统路径，否则为URL路径。
+	* 绝对URL。如http://www.felix.com/index.html 在这种情况下，rewrite模块将会检查这个主机名是否和当前的主机名匹配，如果匹配，则协议和主机名将会剥离出来，剩下的部分将会作为一个URL路径。否则的话，将会执行外部重定向。
+	* -。表示不会执行任何替换。
+
+	除了上述几个，还可以是：
+	* $N：后向引用RewriteRule的Pattern。
+	* %N：后向引用最后一个被RewriteCond匹配的Pattern。
+	* 服务器变量。如% {SERVER_NAME}
+	
+3. FLAGS
+	* C：该标记使得该规则和其下面的规则相链接，当该规则执行失败时，其后面的规则将不会执行。
+	* F：返回403 Forbidden状态码。
+	* G：返回410 GONE状态码。
+	* L：立即停止重写操作，并不再应用其他重写规则。这个标记用于阻止当前已被重写的URL被后继规则再次重写。等同于break
+	* N：重新执行重写操作(从第一个规则重新开始)。此时再次进行处理的URL已经不是原始的URL了，而是经最后一个重写规则处理过的URL。等同于continue。注意：不要制造死循环
+	* NC：忽略大小写。
+	* NE：此标记阻止mod_rewrite对重写结果应用常规的URI转义规则。 一般情况下，特殊字符('%', '$', ';'等)会被转义为等值的十六进制编码('%25', '%24', '%3B'等)。此标记可以阻止这样的转义，以允许百分号等符号出现在输出中
+	* NS：在当前请求是一个内部子请求时，此标记强制重写引擎跳过该重写规则。
+	* R[=code]：强制外部重定向。如果没有指定code，则为302.
+	* E=VAR:VAL  设置环境变量的值。
+```
+
+# 几张图
+![Rewrite匹配1](https://github.com/felix1115/Docs/blob/master/Images/rewrite-3.png)
+
+![Rewrite匹配2](https://github.com/felix1115/Docs/blob/master/Images/rewrite-4.png)
+
+![Rewrite匹配3](https://github.com/felix1115/Docs/blob/master/Images/rewrite-5.png)
+
+![Rewrite匹配4](https://github.com/felix1115/Docs/blob/master/Images/rewrite-6.png)
