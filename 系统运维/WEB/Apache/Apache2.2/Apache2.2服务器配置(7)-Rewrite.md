@@ -152,7 +152,9 @@ OR：表示各个RewriteCond之间的判断条件为OR,而不是默认的AND。
 ![RewriteCond配置示例](https://github.com/felix1115/Docs/blob/master/Images/rewrite-1.png)
 
 * RewriteRule
+
 ![RewriteRule语法](https://github.com/felix1115/Docs/blob/master/Images/rewrite-2.png)
+
 
 ```
 1. Pattern
