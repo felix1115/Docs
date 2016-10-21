@@ -192,11 +192,104 @@ Substitution 可以是如下内容：
 	* E=VAR:VAL  设置环境变量的值。
 ```
 
-# 几张图
-![Rewrite匹配1](https://github.com/felix1115/Docs/blob/master/Images/rewrite-3.png)
+# Apache服务器变量
+```
+* HTTP_USER_AGENT
+返回用户所使用的浏览器信息。如：User-Agent:Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36
 
-![Rewrite匹配2](https://github.com/felix1115/Docs/blob/master/Images/rewrite-4.png)
+* HTTP_REFERER
+链接到当前页面的前一页的URL地址。如：Referer:http://172.17.100.3/mac.html
 
-![Rewrite匹配3](https://github.com/felix1115/Docs/blob/master/Images/rewrite-5.png)
+* HTTP_HOST
+当前请求的 Host: 头信息的内容。如：Host:172.17.100.3
 
-![Rewrite匹配4](https://github.com/felix1115/Docs/blob/master/Images/rewrite-6.png)
+* HTTP_ACCEPT
+当前请求的 Accept: 头信息的内容。如：Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+
+* DOCUMENT_ROOT
+当前运行脚本所在的文档根目录。如：/usr/local/source/apache22/htdocs
+
+* SERVER_ADMIN
+该值指明了Apache服务器配置文件中的SERVER_ADMIN参数。如果脚本运行在一个虚拟主机上，则该值是那个虚拟主机的值。如：admin@felix.com
+
+* SERVER_NAME
+返回客户端当前访问的IP地址或域名。如果客户端使用IP地址访问，则SERVER_NAME是IP地址，如果用域名访问，则是域名。如：www.felix.com
+
+* SERVER_ADDR
+返回服务器的IP地址。如：172.17.100.3
+
+* SERVER_PORT
+返回服务器所使用的端口号。如80
+
+* SERVER_PROTOCOL
+请求页面时通信协议的名称和版本。例如，“HTTP/1.1”。
+
+* SERVER_SOFTWARE
+服务器标识的字串，在响应请求时的头信息中给出。 如Server: Apache
+
+* REMOTE_ADDR
+正在浏览当前页面用户的IP地址。如172.17.100.254
+
+* REMOTE_HOST
+正在浏览当前页面用户的主机名。反向域名解析基于该用户的REMOTE_ADDR，如果无法反向解析，则为客户端的IP地址。如本地测试返回127.0.0.1
+
+* REMOTE_PORT
+用户连接到服务器时所使用的端口。
+
+* REQUEST_METHOD
+访问页面时的请求方法。例如："GET"/"POST"/"HEAD"/"PUT"
+
+* SCRIPT_FILENAME
+当前所请求的文件的绝对路径名。在Apache中，省略了DOCUEMENT_ROOT。如绝对路径为：/usr/local/source/apache22/htdocs/index.html，则SCRIPT_FILENAME为/index.html
+
+* QUERY_STRING
+查询字符串(URL 中第一个问号 ? 之后的内容)
+
+* AUTH_TYPE
+使用HTTP认证时，所使用的认证类型。
+
+* THE_REQUEST
+整个HTTP请求的URI部分。
+
+* REQUEST_URI
+访问此页面所需的URI。例如，“/index.html”
+
+* REQUEST_FILENAME
+当前所请求的文件的绝对路径名。在Apache中，省略了DOCUEMENT_ROOT。如绝对路径为：/usr/local/source/apache22/htdocs/index.html，则SCRIPT_FILENAME为/index.html
+
+* HTTPS
+如果连接使用 SSL/TLS 模式, 则值为on , 否则值为off, 这个参数比较安全, 即使未载入 mod_ssl 模块时.
+
+```
+
+# HTTP Rewrite测试
+## 80重定向到443
+```
+配置：httpd-test.conf
+RewriteEngine on
+RewriteLogLevel 2
+RewriteLog	"logs/rewrite.log"
+
+# port 80 + felix.com or www.felix.com
+RewriteCond %{SERVER_PORT} 80
+RewriteCond %{SERVER_NAME} (www.)?felix\.com
+RewriteRule ^/(.*) https://www.felix.com/$1 [R=301]
+
+# port 80 + host ip (172.17.100.3)
+RewriteCond %{SERVER_PORT} 80 [OR]
+RewriteCond %{SERVER_PORT} 443
+RewriteCond %{SERVER_NAME} 172\.17\.100\.3
+RewriteRule ^/(.*) https://www.felix.com/$1 [R=301]
+
+虚拟主机配置：httpd-ssl.conf
+RewriteEngine On
+RewriteOptions Inherit
+
+```
+
+## 图片防盗链
+```
+RewriteEngine On
+RewriteCond %{HTTP_REFERER} !^(http|https)://www.felix.com [NC] 
+RewriteRule \.(jpg|jpeg|png)$ https://www.felix.com/error.jpg
+```
