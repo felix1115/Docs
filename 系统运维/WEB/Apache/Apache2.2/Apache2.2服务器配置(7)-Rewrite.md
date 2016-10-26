@@ -240,7 +240,10 @@ Substitution 可以是如下内容：
 访问页面时的请求方法。例如："GET"/"POST"/"HEAD"/"PUT"
 
 * SCRIPT_FILENAME
-当前所请求的文件的绝对路径名。在Apache中，省略了DOCUEMENT_ROOT。如绝对路径为：/usr/local/source/apache22/htdocs/index.html，则SCRIPT_FILENAME为/index.html
+CGI脚本的完整路径。如：SCRIPT_FILENAME = /usr/local/source/apache22/cgi-bin/test-cgi
+
+* SCRIPT_NAME
+CGI脚本的名称。如：SCRIPT_NAME = /cgi-bin/test-cgi
 
 * QUERY_STRING
 查询字符串(URL 中第一个问号 ? 之后的内容)
