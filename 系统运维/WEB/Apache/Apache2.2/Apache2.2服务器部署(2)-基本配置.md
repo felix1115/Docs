@@ -500,3 +500,18 @@ EtagÓÉ·şÎñÆ÷¶ËÉú³É£¬¿Í»§¶ËÍ¨¹ıIf-Match»òÕßËµIf-None-MatchÕâ¸öÌõ¼şÅĞ¶ÏÇëÇóÀ´ÑéÖ¤×
 ´ğ°¸ÊÇÍ¬Ê±Ê¹ÓÃ£¬Ò²¾ÍÊÇËµÔÚÍêÈ«Æ¥ÅäIf-Modified-SinceºÍIf-None-Match¼´¼ì²éÍêĞŞ¸ÄÊ±¼äºÍEtagÖ®ºó£¬·şÎñÆ÷²ÅÄÜ·µ»Ø304.(²»ÒªÏİÈëµ½µ×Ê¹ÓÃË­µÄÎÊÌâ¹ÖÈ¦)
 
 ```
+
+# ApacheÈÕÖ¾ÇĞ¸î
+```
+rotatelogsÓï·¨¸ñÊ½£º
+rotatelogs [-v] [-l] [-L linkname] [-p prog] [-f] [-t] [-e] [-c] <logfile> {<rotation time in seconds>|<rotation size>(B|K|M|G)} [offset minutes from UTC]
+ËµÃ÷£º
+logfile£º±íÊ¾·Ö¸îºóµÄÈÕÖ¾ÎÄ¼şÃû³Æ¡£
+rotation time in seconds£º±íÊ¾¶à³¤Ê±¼ä×öÒ»´ÎÈÕÖ¾·Ö¸î¡£
+rotation size£º¸ù¾İÎÄ¼şµÄ´óĞ¡×öÈÕÖ¾·Ö¸î¡£
+offset minutes from UTC£º±íÊ¾±¾µØÊ±¼äºÍUTCÊ±¼äµÄÆ«ÒÆÖµ¡£
+
+
+Ê¾Àı£º
+CustomLog "|/usr/local/source/apache22/bin/rotatelogs /data/logs/apache22/access_%Y%m%d 86400 480" common
+```
