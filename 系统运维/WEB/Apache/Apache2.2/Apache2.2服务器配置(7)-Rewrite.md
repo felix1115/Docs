@@ -132,6 +132,7 @@ Text error message								forcing proxy-throughput with http://127.0.0.1:8080/in
 	* 服务器变量。
 	* RewriteRule的后向引用，引用方法是$N。N的范围是0-9。
 	* RewriteCond的后向引用，引用方法是%N。N的范围是0-9。引用当前若干RewriteCond条件中最后符合的条件中的分组部分。
+	* %{ENV:variable}。根据环境变量进行设置。
 	
 2. CondPattern
 表示TestString需要匹配的内容。是一个正则表达式。
