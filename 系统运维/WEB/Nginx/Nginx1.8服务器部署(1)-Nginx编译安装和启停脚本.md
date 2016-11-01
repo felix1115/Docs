@@ -110,71 +110,76 @@ WINCH£ºgraceful shutdown worker process¡£
 
 . /etc/rc.d/init.d/functions
 
-prog="nginx"
 prefix="/usr/local/source/nginx18"
 exec="$prefix/sbin/nginx"
-conf_file="$prefix/conf/nginx.conf"
-lock_file="/var/lock/subsys/nginx"
+config="$prefix/conf/nginx.conf"
+lockfile="/var/lock/subsys/nginx"
+prog="nginx"
 
 start() {
     [ -x $exec ] || exit 5
-    [ -f $conf_file ] || exit 6
+    [ -f $config ] || exit 6
     #start program
     echo -n "Starting $prog: "
-    daemon $exec -c $conf_file
-    RETVAL=$?
+    daemon $exec -c $config
+    retval=$?
     echo
-    [ $RETVAL -eq 0 ] && touch $lock_file
-    return $RETVAL
+    [ $retval -eq 0 ] && touch $lockfile
+	return $retval
 }
 
 stop() {
     # stop program
     echo -n "Stoping $prog: "
     killproc $prog -QUIT
-    RETVAL=$?
+    retval=$?
     echo
-    [ $RETVAL -eq 0 ] && rm -rf $lock_file
-    return $RETVAL
+    [ $retval -eq 0 ] && rm -f $lockfile
+	return $retval
+}
+
+restart() {
+	configtest_quiet || configtest || return $?
+	stop
+	sleep 1
+	start
 }
 
 graceful-restart() {
     #graceful restart program
     echo -n "graceful restart $prog: "
     killproc $prog -HUP
-    RETVAL=$?
+    retval=$?
     echo
-    return $RETVAL
 }
 
 reload() {
     #reload config file
-    echo -n "Reload config $conf_file: "
+    echo -n "Reload config $config: "
     killproc $prog -HUP
-    RETVAL=$?
+    retval=$?
     echo
-    return $RETVAL    
 }
 
 configtest() {
-    $exec -t -c $conf_file
+    $exec -t -c $config
 }
 
 configtest_quiet() {
-    configtest > /dev/null 2>&1
+	configtest &> /dev/null
 }
+
+
 
 case $1 in
     start)
-        start
+        $1
         ;;
     stop)
-        stop
+        $1
         ;;
     restart)
-        configtest_quiet || configtest || exit $?
-        stop
-        start
+        $1
         ;;
     status)
         status $prog
@@ -183,7 +188,16 @@ case $1 in
         $1
         ;;
     configtest)
-        configtest
+		echo -n "Check config: $config "
+		configtest_quiet
+		retval=$?
+		if [ $retval -eq 0 ]; then
+			success
+		else
+			failure
+			configtest
+		fi
+		echo	
         ;;
     reload)
         $1
