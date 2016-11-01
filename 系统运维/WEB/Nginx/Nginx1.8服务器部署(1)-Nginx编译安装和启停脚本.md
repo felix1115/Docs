@@ -188,13 +188,12 @@ case $1 in
         $1
         ;;
     configtest)
-		echo -n "Check config: $config "
 		configtest_quiet
 		retval=$?
 		if [ $retval -eq 0 ]; then
+			echo -n "Check config: $config "
 			success
 		else
-			failure
 			configtest
 		fi
 		echo	
