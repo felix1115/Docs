@@ -464,12 +464,68 @@ gzip_buffers 64 8k;
 gzip_comp_level 6;
 gzip_min_length 10k;
 gzip_disable "MSIE [4-6]\.";
-gzip_types text/html text/plain text/css text/xml application/javascript;
+gzip_types text/plain text/css text/xml application/javascript;
 gzip_http_version 1.1;
 gzip_vary on; 
 ```
 
 # log
+* access_log
+```
+语法格式：
+access_log path [format [buffer=size] [gzip[=level]] [flush=time] [if=condition]];
+access_log off;
+
+作用：指定用户访问的日志记录位置。
+off：表示关闭日志记录功能。
+path：指定日志存储位置。记录到syslog的写法如下：
+	error_log syslog:server=172.17.100.1 debug
+	access_log syslog:server=172.17.100.1:12345,facility=local7,tag=nginx,serverity=info combined
+format：指定记录日志时使用的log_format
+if：将满足指定条件的信息记录下来。如果if后面的条件值为0或者是空的字符串，则不会被记录。
+```
+
+* log_format
+```
+用于http段中。
+
+语法格式：log_format <name> <string> ...
+name：表示被access_log引用的名字。
+string：表示要引用的变量名。
+	$bytes_sent：发送到客户端的字节数。包括响应头。
+	$body_bytes_sent：发送到客户端的字节数。不包括响应头。
+	$content_length：请求头中的Content-Length字段。
+	$content_type：请求头中Content-Type字段。
+	$connection：客户端的连接序列号。
+	$connection_requests：通过该连接发送的当前请求数。
+	$request_length：客户端发送的HTTP请求的长度(包括请求行、请求头、请求体)。
+	$request_time：表示处理请求所花费的时间(单位是秒，可以显示到毫秒级)。这个时间表示的是从读取客户端发来的请求的第一个字节开始，到最后一个字节发送到客户端后的日志写入所花费的总时间。
+	$status：响应状态码。
+	$time_iso8601：使用ISO 8601的标准格式表示的本地时间。2016-11-03T13:00:01+08:00
+	$time_local：通用日志格式表示的本地时间。03/Nov/2016:13:00:01 +0800
+	$document_root：当前请求的root或alias指令的值。
+	$document_uri；用户请求的URI。
+	$host：用户访问的主机。顺序如下：请求行的主机名、请求头的Host字段、匹配请求的server name。
+	$hostname：主机名。
+	$https：如果使用ssl模式，则为on，否则为空。
+	$nginx_version：nginx的版本。
+	$query_string：查询字符串。
+	$remote_addr：客户端地址
+	$remote_port：客户端端口
+	$remote_user：基本身份认证的用户名
+	$request：完整的原始请求行的内容。请求行包括：请求方法、请求的URL、HTTP协议版本。
+	$request_body：请求体
+	$request_uri：完整的请求的URI。
+	$request_method：请求方法。
+	$scheme：请求的scheme。如http、https
+	$server_addr：接收请求的服务器的地址。
+	$server_port：接收请求的服务器的端口。
+	$server_name：接收请求的服务器的名称。
+	$server_protocol：请求的协议。如HTTP/1.0、HTTP/1.1、HTTP/2.0
+	$http_<name>：name表示的是任意的请求头字段名称。其中name是小写的，用下划线来代替请求头中的破折号。如http_user_agent
+	
+```
+
 
 # 访问控制
 
