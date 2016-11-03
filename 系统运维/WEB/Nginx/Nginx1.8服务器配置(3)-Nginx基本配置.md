@@ -55,6 +55,21 @@ error_log file|stderr|syslog:server-address[,parameter-value] [debug | info | no
 		
 ```
 
+* mainÇø¿éÅäÖÃÊ¾Àı
+```
+user  www www;
+worker_processes  4;
+worker_cpu_affinity 0001 0010 0100  1000;
+
+worker_rlimit_nofile 1000000;
+
+error_log  logs/error.log  notice;
+
+pid        /var/run/nginx.pid;
+google_perftools_profiles /usr/local/source/nginx18/tcmalloc/tcmalloc;
+
+```
+
 # eventsÇø¿éÉèÖÃ
 ```
 use£ºÖ¸¶¨´¦ÀíÇëÇóµÄ·½Ê½¡£³£ÓÃµÄ·½Ê½ÓĞ£ºselect¡¢poll¡¢kqueue£¨ÊÊÓÃÓÚFreeBSD4.1+£¬OpenBSD 2.9+£¬MasOS X,NetBSD 2.0£©¡¢epoll£¨ÊÊÓÃÓÚLinux2.6+ÒÔÉÏµÄÄÚºË£©¡¢/dev/poll£¨Solaris 7 11/99+£¬HP/UX 11.22+£©¡¢eventport£¨Solaris 10
@@ -89,7 +104,15 @@ debug_connection <address>|<cidr>|unix: Ã»ÓĞÄ¬ÈÏÖµ¡£ÎªÖ¸¶¨µÄ¿Í»§¶Ë¿ªÆôdebug log£
     debug_connection localhost;
 ```
 
-
+* eventÇø¿éÅäÖÃÊ¾Àı
+```
+events {
+    use epoll;
+    accept_mutex off;
+    multi_accept on;
+    worker_connections  200000;
+}
+```
 
 # httpÇø¿éÅäÖÃ
 
@@ -312,7 +335,150 @@ types {
 
 * error_page
 ```
+Óï·¨¸ñÊ½£ºerror_page <code> ... [=[response]] <uri>;
+×÷ÓÃ£ºÎªÖ¸¶¨µÄÒ»¸ö»ò¶à¸ö´íÎó´úÂëÏÔÊ¾Ö¸¶¨µÄURI¡£URI¿ÉÒÔ°üº¬±äÁ¿¡£
+Õâ¸ö½«»á²úÉúÒ»¸öÄÚ²¿µÄÖØ¶¨Ïòµ½Ö¸¶¨µÄURI£¬²¢ÇÒ½«¿Í»§¶ËµÄÇëÇó·½·¨¸ÄÎªGET(³ıÁËGETºÍHEAD·½·¨Ö®ÍâµÄËùÓĞ·½·¨)¡£
+
+code£º±íÊ¾ÏìÓ¦×´Ì¬Âë¡£
+response£º±íÊ¾¸Ä±äÏìÓ¦×´Ì¬ÂëÎªÖ¸¶¨µÄÏìÓ¦×´Ì¬Âë¡£
+uri£ºÏà¶ÔÓÚÕ¾µã¸ùÄ¿Â¼rootµÄÂ·¾¶¡£²»ÊÇÎïÀíÂ·¾¶¡£
+
+Ê¾Àı£º
+error_page 404             /404.html;
+error_page 500 502 503 504 /50x.html;
+
+
+* ¸Ä±äÏìÓ¦×´Ì¬Âë
+	¿ÉÒÔÓÃ=response¸Ä±äÏìÓ¦×´Ì¬Âë
+	Ê¾Àı£ºerror_page 404 =200 /test.html;
+
+* ÖØ¶¨Ïòµ½Ö¸¶¨µÄURL
+	Ê¾Àı£ºerror_page 404 http://www.felix.com;
+	ÕâÖÖÇé¿öÏÂ£¬½«»á²úÉúÒ»¸ö302(ÁÙÊ±ÖØ¶¨Ïò)µÄ×´Ì¬Âë¸ø¿Í»§¶Ë¡£
+	error_page 404 =301 http://www.felix.com;
+	ÕâÑù¾Í»á²úÉúÒ»¸ö301(ÓÀ¾ÃÖØ¶¨Ïò)µÄ×´Ì¬Âë¸ø¿Í»§¶Ë¡£
+
+* ´«µİerror_pageµ½ÃüÃûµÄlocation
+	location / {
+		error_page 404 = @fallback;
+	}
+	location @fallback {
+		proxy_pass http://backend;
+	}
+```
+
+* alias
+```
+ÓÃÓÚlocationÇø¿éÖĞ¡£
+
+×÷ÓÃ£ºÊµÏÖURIºÍÎÄ¼şÏµÍ³Â·¾¶Ö®¼äµÄÓ³Éä¡£»á½«ÓÃ»§µÄÇëÇóµÄÄ¿Â¼Ìæ»»ÎªaliasËù¶¨ÒåµÄÄ¿Â¼¡£
+```
+
+* index
+```
+ÓÃÓÚÉèÖÃnginxµÄÄ¬ÈÏÊ×Ò³ÎÄ¼ş¡£´¦ÀíÒÔ¡°/¡±½áÎ²µÄÇëÇó¡£²éÕÒË³ĞòÎªindexËù¶¨ÒåµÄË³Ğò¡£Èç¹ûÕÒµ½£¬Ôò²»»á²éÕÒÏÂÒ»¸ö¡£
+```
+
+* location
+```
 
 ```
 
+# gzipÏà¹ØÅäÖÃ
+* gzip
+```
+×÷ÓÃ£ºÊÇ·ñ¶ÔresponseµÄÄÚÈİÆôÓÃgzipÑ¹Ëõ¹¦ÄÜ¡£
+on£º±íÊ¾ÆôÓÃ¡£
+off£º±íÊ¾²»ÆôÓÃ¡£
+Ä¬ÈÏÎªoff¡£
+```
 
+* gzip_buffers
+```
+Óï·¨¸ñÊ½£ºgzip_buffers <number> <size>
+×÷ÓÃ£ºÖ¸¶¨number¸ösize´óĞ¡µÄ»º´æÓÃÓÚÑ¹Ëõresponse¡£
+Ä¬ÈÏÖµ£ºgzip_buffers 32 4k|16 8k;
+```
+
+* gzip_comp_level
+```
+×÷ÓÃ£ºÖ¸¶¨Ñ¹ËõµÈ¼¶¡£Ä¬ÈÏÎª1¡£·¶Î§ÊÇ1µ½9
+```
+
+* gzip_disable
+```
+Óï·¨¸ñÊ½£ºgzip_disable <regexp>
+×÷ÓÃ£ºÊ¹ÓÃÕıÔò±í´ïÊ½¶Ô¿Í»§¶ËÇëÇóÍ·µÄUser-Agent×Ö¶Î½øĞĞÆ¥Åä£¬Èç¹ûÆ¥Åäµ½£¬Ôò¶ÔÏìÓ¦ÄÚÈİ²»ÆôÓÃgzipÑ¹Ëõ¹¦ÄÜ¡£
+Èç£ºgzip_disable "MSIE [4-6]\."£¬½«»áÆ¥Åäµ½MSIE 4.*µ½MSIE 6.*£¬µ«ÊÇ²»ÄÜÆ¥Åäµ½MSIE 6.0; ... SV1
+```
+
+* gzip_min_length
+```
+×÷ÓÃ£ºÖ¸¶¨½«»á±»Ñ¹ËõµÄÏìÓ¦ÄÚÈİµÄ×îĞ¡³¤¶È¡£¸ù¾İÏìÓ¦Í·µÄContent-Length×Ö¶Î¡£Ä¬ÈÏÊÇ20¸ö×Ö½Ú¡£
+```
+
+* gzip_http_version
+```
+×÷ÓÃ£ºÖ¸¶¨ĞèÒª±»Ñ¹ËõµÄHTTPµÄ×îĞ¡°æ±¾¡£ÓĞ1.0ºÍ1.1Á½¸öÖµ¡£Ä¬ÈÏÊÇ1.1
+```
+
+* gzip_types
+```
+Óï·¨¸ñÊ½£ºgzip_types mime-type ...;
+Ä¬ÈÏÖµ£ºgzip_types text/html;
+
+×÷ÓÃ£º¶ÔÖ¸¶¨µÄMIMEÀàĞÍ½øĞĞÑ¹Ëõ¡£*½«»áÆ¥ÅäËùÓĞµÄMIMEÀàĞÍ¡£text/html×Ü»á±»Ñ¹Ëõ¡£
+```
+
+* gzip_vary
+```
+Ä¬ÈÏÖµÊÇoff¡£
+×÷ÓÃ£ºÔÚHTTPÏìÓ¦Í·ÖĞÔö¼Ó"Vary: Accept-Encoding"×Ö¶Î¡£
+
+VaryµÄ×÷ÓÃ£º¸æËß´úÀí·şÎñÆ÷»º´æÁ½ÖÖ°æ±¾µÄ×ÊÔ´£ºÑ¹ËõºÍ·ÇÑ¹Ëõ£¬ÕâÓĞÖúÓÚ±ÜÃâÒ»Ğ©¹«¹²´úÀí²»ÄÜÕıÈ·µØ¼ì²âContent-Encoding±êÍ·µÄÎÊÌâ¡£
+´úÀí·şÎñÆ÷»áÎª²»Í¬µÄAccept-Encoding´æ´¢µÄÄÚÈİÀàĞÍÊÇ²»Ò»ÑùµÄ¡£Ö§³ÖAccept-Encoding£¬Ôò´æ´¢µÄÊÇgzip»òdeflate¸ñÊ½£¬²»Ö§³ÖAccept-EncodingÔò´æ´¢µÄÊÇÍøÒ³Ô´Âë¡£
+
+¸ÃÑ¡ÏîÒ»°ãĞèÒª¿ªÆô¡£gzip_vary on;
+```
+
+* gzip_proxied
+```
+Ä¬ÈÏÖµÎªoff¡£
+
+Nginx×÷Îª·´Ïò´úÀíµÄÊ±ºòÆôÓÃ£¬¸ù¾İÄ³Ğ©ÇëÇóºÍÓ¦´ğÀ´¾ö¶¨ÊÇ·ñÔÚ¶Ô´úÀíÇëÇóµÄÓ¦´ğÆôÓÃgzipÑ¹Ëõ£¬ÊÇ·ñÑ¹ËõÈ¡¾öÓÚÇëÇóÍ·ÖĞµÄ¡°Via¡±×Ö¶Î£¬Ö¸ÁîÖĞ¿ÉÒÔÍ¬Ê±Ö¸¶¨¶à¸ö²»Í¬µÄ²ÎÊı£¬ÒâÒåÈçÏÂ£º
+off - ÎªËùÓĞµÄ´úÀíÇëÇó¹Ø±ÕÑ¹Ëõ¹¦ÄÜ
+expired - ÆôÓÃÑ¹Ëõ£¬Èç¹ûheaderÍ·ÖĞ°üº¬ "Expires" Í·ĞÅÏ¢
+no-cache - ÆôÓÃÑ¹Ëõ£¬Èç¹ûheaderÍ·ÖĞ°üº¬ "Cache-Control:no-cache" Í·ĞÅÏ¢
+no-store - ÆôÓÃÑ¹Ëõ£¬Èç¹ûheaderÍ·ÖĞ°üº¬ "Cache-Control:no-store" Í·ĞÅÏ¢
+private - ÆôÓÃÑ¹Ëõ£¬Èç¹ûheaderÍ·ÖĞ°üº¬ "Cache-Control:private" Í·ĞÅÏ¢
+no_last_modified - ÆôÓÃÑ¹Ëõ,Èç¹ûheaderÍ·ÖĞ²»°üº¬ "Last-Modified" Í·ĞÅÏ¢
+no_etag - ÆôÓÃÑ¹Ëõ ,Èç¹ûheaderÍ·ÖĞ²»°üº¬ "ETag" Í·ĞÅÏ¢
+auth - ÆôÓÃÑ¹Ëõ , Èç¹ûheaderÍ·ÖĞ°üº¬ "Authorization" Í·ĞÅÏ¢
+any - ÎŞÌõ¼şÆôÓÃÑ¹Ëõ
+```
+
+* gzipÅäÖÃÊ¾Àı
+```
+gzip  on; 
+gzip_buffers 64 8k;     
+gzip_comp_level 6;
+gzip_min_length 10k;
+gzip_disable "MSIE [4-6]\.";
+gzip_types text/html text/plain text/css text/xml application/javascript;
+gzip_http_version 1.1;
+gzip_vary on; 
+```
+
+# log
+
+# ·ÃÎÊ¿ØÖÆ
+
+
+# ÈÏÖ¤
+
+
+# AutoIndex
+
+
+
+# 

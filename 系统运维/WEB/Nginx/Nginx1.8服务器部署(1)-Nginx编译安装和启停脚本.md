@@ -147,6 +147,7 @@ restart() {
 
 graceful-restart() {
     #graceful restart program
+	configtest_quiet || configtest || return $?
     echo -n "graceful restart $prog: "
     killproc $prog -HUP
     retval=$?
@@ -155,6 +156,7 @@ graceful-restart() {
 
 reload() {
     #reload config file
+	configtest_quiet || configtest || return $?
     echo -n "Reload config $config: "
     killproc $prog -HUP
     retval=$?
@@ -184,7 +186,7 @@ case $1 in
     status)
         status $prog
         ;;
-    graceful-restart)
+    reload|graceful-restart)
         $1
         ;;
     configtest)
@@ -198,10 +200,8 @@ case $1 in
 		fi
 		echo	
         ;;
-    reload)
-        $1
-        ;;
     *)
         echo "Usage: $0 start|stop|restart|status|configtest|graceful-restart|reload"
 esac
+
 ```
