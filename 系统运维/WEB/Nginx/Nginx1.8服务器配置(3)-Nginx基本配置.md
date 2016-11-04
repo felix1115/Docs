@@ -379,9 +379,40 @@ error_page 500 502 503 504 /50x.html;
 用于设置nginx的默认首页文件。处理以“/”结尾的请求。查找顺序为index所定义的顺序。如果找到，则不会查找下一个。
 ```
 
-* location
+# location
+* location说明
+```
+用于server和location段中。
+语法格式如下：
+location [ = | ~ | ~* | ^~ ] uri { ... }
+location @name { ... }
+
+
+location分为两种：普通location和正则location。
+=、^~、@以及无任何前缀的都属于普通location。
+~：表示的是正则location。区分大小写。
+~*：表示的是正则location。不区分大小写。
+
 ```
 
+* location匹配顺序
+```
+location的匹配顺序：先匹配普通的location，再匹配正则location。
+
+* 普通location的匹配顺序：最大前缀匹配。和出现在配置文件中的先后顺序无关。
+	示例:
+	location /prefix 和location /prefix/test，如果用户请求为/prefix/test/a.html，则两个location都满足，根据最大前缀匹配，则会匹配/prefix/test这个。
+
+* 通location根据最大前缀匹配出结果后，还要根据正则location进行继续匹配。
+说明：如果继续搜索的正则location也有匹配上的，则正则location会覆盖普通location的最大前缀匹配。如果正则location没有匹配上，则以普通location的最大前缀匹配为结果。
+
+* 正则location的匹配顺序：根据在配置文件中出现的先后顺序匹配的。并且只要匹配到一条正则location后，就不再考虑后面的正则location了。
+
+* 通常情况是，匹配完了普通location后，还要检测正则location，但是可以告诉Nginx，匹配到了普通location后，就不要继续匹配正则location了。要做到这一点，需要在普通location前面加上“^~”符号即可。
+
+* 除了上面说的^~可以阻止继续搜索正则location外，还可以使用“=”来阻止继续搜索正则location。“=”和“^~”的区别在于：^~依然遵守最大前缀匹配规则，而=则强调的是严格匹配。
+
+* 另一种可以阻止继续搜索正则location外，还有一种方式，就是：普通location的最大前缀匹配恰好就是严格精确匹配。这样也会停止继续搜索正则location。
 ```
 
 # gzip相关配置
