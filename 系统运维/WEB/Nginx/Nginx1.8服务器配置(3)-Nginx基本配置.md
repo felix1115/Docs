@@ -557,6 +557,10 @@ string：表示要引用的变量名。
 	
 ```
 
+* Nginx所有变量列表
+[Nginx变量列表](http://nginx.org/en/docs/varindex.html)
+
+
 * log配置示例
 ```
 log_format common '[$time_iso8601] $remote_addr $remote_user "$request" $body_bytes_sent $status "$http_referer" "$http_user_agent"';
