@@ -526,15 +526,177 @@ string：表示要引用的变量名。
 	
 ```
 
+* log配置示例
+```
+log_format common '[$time_iso8601] $remote_addr $remote_user "$request" $body_bytes_sent $status "$http_referer" "$http_user_agent"';
+access_log  logs/access.log  common;
+```
 
 # 访问控制
 
+> 用于http、server、location段中。
+
+
+* allow
+```
+语法格式：allow <address> | <cidr> | all;
+address：表示的是一个IP地址。如172.17.100.1
+cidr：表示的是一个CIDR地址块。如172.17.100.0/24
+all：表示的是所有地址。
+
+示例：
+allow 172.17.100.1;
+allow 172.17.100.0/24;
+allow all;
+```
+
+* deny
+```
+deny <address> | <cidr> | all;
+address：表示的是一个IP地址。如172.17.100.1
+cidr：表示的是一个CIDR地址块。如172.17.100.0/24
+all：表示的是所有地址。
+
+示例：
+deny 172.17.100.1;
+deny 172.17.100.0/24;
+deny all;
+```
+
+* allow和deny的规则
+```
+allow和deny根据出现在配置中的顺序进行匹配，如果匹配就跳出，如果都没有匹配则允许。
+```
+
+* satisfy
+```
+语法格式：satisfy all | any;
+
+默认为all。
+
+all：表示必须通过认证和allow才允许访问。(两者同时满足)
+any：表示只要满足认证或者是allow就可以。(满足其一即可)
+
+```
 
 # 认证
 
+> 用于http、server、location段中。
+
+
+* auth_basic
+```
+语法格式：auth_basic <string> | off
+默认：off
+
+off：表示不使用认证。
+string：表示认证的realm，可以包含变量。
+
+```
+
+* auth_basic_user_file
+```
+作用：指定存放用户认证信息的文件名。文件名可以包含变量。
+该文件的格式如下：
+# comment
+name1:password1
+name2:password2:comment
+name3:password3
+
+
+可以直接用apache的htpasswd命令生成该文件。
+```
+
+* htpasswd
+```
+Usage:
+        htpasswd [-cmdpsD] passwordfile username
+        htpasswd -b[cmdpsD] passwordfile username password
+        htpasswd -n[mdps] username
+        htpasswd -nb[mdps] username password
+ -c  Create a new file.
+ -n  Don't update file; display results on stdout.
+ -m  Force MD5 encryption of the password.
+ -d  Force CRYPT encryption of the password (default).
+ -p  Do not encrypt the password (plaintext).
+ -s  Force SHA encryption of the password.
+ -b  Use the password from the command line rather than prompting for it.
+ -D  Delete the specified user.
+说明：
+-c：创建一个新的密码文件。用于第一次使用。
+-n：不更新文件，只是显示结果。
+-m：使用md5加密。
+-d：使用CRYPT加密。默认方式。
+-p：不加密。明文存放。
+-s：使用SHA加密。
+-b：从命令行中获取密码，而不是从交互式的提示中获取。
+-d：删除指定的用户。
+
+
+示例：
+[root@vm3 auth]# htpasswd -c /usr/local/source/nginx18/auth/users nginx_test01
+New password: 
+Re-type new password: 
+Adding password for user nginx_test01
+[root@vm3 auth]# cat users 
+nginx_test01:iExwE35H1j7oA
+[root@vm3 auth]# 
+```
+
+* 配置示例
+```
+location /felix {
+	root html;
+	index index.html; 
+
+	allow 172.17.100.1;
+	deny all;
+	satisfy any;
+
+	auth_basic "need auth";
+	auth_basic_user_file ../auth/users;
+}
+
+```
 
 # AutoIndex
 
+> 用于http、server和location段中。如果没有找到index指定所定义的文件，则列出目录下的内容。
 
 
-# 
+* autoindex
+```
+语法：autoindex on|off
+默认值：off
+作用：是否启动autoindex功能。
+```
+
+* autoindex_exact_size 
+```
+语法：autoindex_exact_size on|off
+默认值：on
+作用：是否显示文件的准确大小，而不是使用KB/MB/GB。
+```
+
+* autoindex_format
+```
+语法格式：autoindex_format html|xml|json|jsonp
+默认值：html
+作用：指定目录显示格式。
+```
+
+* autoindex_localtime
+```
+语法格式：autoindex_localtime on|off
+默认值：off
+作用：是否以本地时间显示。
+```
+
+* 配置示例
+```
+autoindex on;
+autoindex_format html;
+autoindex_exact_size on;
+autoindex_localtime on;
+```
+
