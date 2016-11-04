@@ -731,3 +731,31 @@ autoindex_exact_size on;
 autoindex_localtime on;
 ```
 
+# stub_status
+* 配置示例
+```
+说明：在编译时，需要启用--with-http_stub_status_module
+
+location /status {
+	stub_status;
+	allow 172.17.100.0/24;
+	deny all;
+}
+```
+
+* 输出介绍
+````
+Active connections: 1338 
+server accepts handled requests
+ 15910 15910 15138 
+Reading: 0 Writing: 528 Waiting: 810 
+
+
+Active Connections：当前活动的客户端的连接数。包括Waiting状态的连接。
+accepts：总共接收的客户端连接数。
+handled：已经处理的客户端的连接数。通常情况下，该数值和accepts的值相等，除非超过了资源限制，如worker_connections的限制。
+requests：总的客户端的请求数。
+Reading：当前nginx正在读取请求头的连接数。
+Writing：当前nginx正在准备响应数据包给客户端的连接数。
+Waiting：表示正在等待下一个请求到来的空闲客户端连接数。通常这个值等于：active - reading - writing
+```
