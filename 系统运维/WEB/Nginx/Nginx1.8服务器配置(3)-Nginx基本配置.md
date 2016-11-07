@@ -614,6 +614,23 @@ any：表示只要满足认证或者是allow就可以。(满足其一即可)
 
 ```
 
+* 设置黑白名单
+```
+指定可以访问服务器的白名单设置
+
+http {
+	...
+	include whitelist.conf;
+}
+
+
+cat whitelist.conf
+
+allow 172.17.100.0/24;
+allow 192.168.1.0/24;
+deny all;
+```
+
 # 认证
 
 > 用于http、server、location段中。
