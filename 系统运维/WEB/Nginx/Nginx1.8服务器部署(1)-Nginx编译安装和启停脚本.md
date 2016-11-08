@@ -116,6 +116,11 @@ config="$prefix/conf/nginx.conf"
 lockfile="/var/lock/subsys/nginx"
 prog="nginx"
 
+getNginxMaster() {
+	number=$(ps aux | grep 'nginx: master' | grep -v 'grep' | wc -l)
+	return $number
+}
+
 start() {
     [ -x $exec ] || exit 5
     [ -f $config ] || exit 6
@@ -130,7 +135,7 @@ start() {
 
 stop() {
     # stop program
-    echo -n "Stoping $prog: "
+    echo -n "Stopping $prog: "
     killproc $prog -QUIT
     retval=$?
     echo
@@ -142,6 +147,21 @@ restart() {
 	configtest_quiet || configtest || return $?
 	stop
 	sleep 1
+
+	while :
+	do
+		getNginxMaster
+		retval=$?
+		if [ $retval -eq 1 ]; then
+			echo  -n "Waiting for shutdown: $prog"
+			echo
+			sleep 2
+		else
+			success
+			break
+		fi
+	done
+
 	start
 }
 

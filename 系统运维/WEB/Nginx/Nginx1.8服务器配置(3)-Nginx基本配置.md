@@ -403,7 +403,7 @@ location的匹配顺序：先匹配普通的location，再匹配正则location。
 	示例:
 	location /prefix 和location /prefix/test，如果用户请求为/prefix/test/a.html，则两个location都满足，根据最大前缀匹配，则会匹配/prefix/test这个。
 
-* 通location根据最大前缀匹配出结果后，还要根据正则location进行继续匹配。
+* 普通location根据最大前缀匹配出结果后，还要根据正则location进行继续匹配。
 说明：如果继续搜索的正则location也有匹配上的，则正则location会覆盖普通location的最大前缀匹配。如果正则location没有匹配上，则以普通location的最大前缀匹配为结果。
 
 * 正则location的匹配顺序：根据在配置文件中出现的先后顺序匹配的。并且只要匹配到一条正则location后，就不再考虑后面的正则location了。
