@@ -102,7 +102,7 @@ USR2：平滑升级可执行程序。
 WINCH：graceful shutdown worker process。
 ```
 
-# Nginx的启停脚本
+# Nginx的启停脚本(没有使用TCMalloc)
 ```
 #!/bin/bash
 # chkconfig: 2345 85 15
@@ -224,4 +224,132 @@ case $1 in
         echo "Usage: $0 start|stop|restart|status|configtest|graceful-restart|reload"
 esac
 
+```
+
+# Nginx启停脚本(使用TCMalloc)
+```
+#!/bin/bash
+# chkconfig: 2345 85 15
+# description: start nginx on level 2345
+
+. /etc/rc.d/init.d/functions
+
+prefix="/usr/local/source/nginx18"
+exec="$prefix/sbin/nginx"
+config="$prefix/conf/nginx.conf"
+lockfile="/var/lock/subsys/nginx"
+prog="nginx"
+# if nginx use tcmalloc, please set it to yes, otherwise set it to no
+tcmalloc="yes"
+tcmallow_path="$prefix/tcmalloc"
+
+getNginxMaster() {
+	number=$(ps aux | grep 'nginx: master' | grep -v 'grep' | wc -l)
+	return $number
+}
+
+start() {
+    [ -x $exec ] || exit 5
+    [ -f $config ] || exit 6
+    #start program
+    echo -n "Starting $prog: "
+    daemon $exec -c $config
+    retval=$?
+    echo
+    [ $retval -eq 0 ] && touch $lockfile
+	return $retval
+}
+
+stop() {
+    # stop program
+    echo -n "Stopping $prog: "
+    killproc $prog -QUIT
+    retval=$?
+    echo
+    [ $retval -eq 0 ] && rm -f $lockfile
+	if [ $tcmalloc == 'yes' ]; then
+		rm -f $tcmallow_path/*
+	fi
+	return $retval
+}
+
+restart() {
+	configtest_quiet || configtest || return $?
+	stop
+	sleep 1
+
+	while :
+	do
+		getNginxMaster
+		retval=$?
+		if [ $retval -eq 1 ]; then
+			echo  -n "Waiting for shutdown $prog"
+			echo
+			sleep 2
+		else
+			break
+		fi
+	done
+
+	start
+}
+
+graceful-restart() {
+    #graceful restart program
+	configtest_quiet || configtest || return $?
+    echo -n "graceful restart $prog: "
+    killproc $prog -HUP
+    retval=$?
+    echo
+}
+
+reload() {
+    #reload config file
+	configtest_quiet || configtest || return $?
+    echo -n "Reload config $config: "
+    killproc $prog -HUP
+    retval=$?
+    echo
+}
+
+configtest() {
+    $exec -t -c $config
+}
+
+configtest_quiet() {
+	configtest &> /dev/null
+}
+
+
+
+case $1 in
+    start)
+        $1
+        ;;
+    stop)
+        $1
+        ;;
+    restart)
+        $1
+        ;;
+    status)
+        status $prog
+        ;;
+    reload|graceful-restart)
+        $1
+        ;;
+    configtest)
+		configtest_quiet
+		retval=$?
+		if [ $retval -eq 0 ]; then
+			echo -n "Check config: $config "
+			success
+		else
+			configtest
+		fi
+		echo	
+        ;;
+    *)
+        echo "Usage: $0 start|stop|restart|status|configtest|graceful-restart|reload"
+esac
 ```
