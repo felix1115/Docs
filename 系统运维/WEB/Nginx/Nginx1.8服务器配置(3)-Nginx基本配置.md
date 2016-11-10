@@ -153,7 +153,7 @@ events {
 如果客户端请求头的大小超过一个buffer(size)的大小，则会返回400(Bad Request)错误给客户端。
 ```
 
-* clent_header_timeout
+* client_header_timeout
 ```
 用在http和server段。
 默认值60s。用于定义读取客户端请求头的超时时间。如果客户端在这个时间段内没有发送整个请求头，则服务器会发送408(Request Timeout)错误给客户端。
