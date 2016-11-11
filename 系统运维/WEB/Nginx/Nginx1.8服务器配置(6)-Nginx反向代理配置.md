@@ -247,7 +247,23 @@ off：不会将请求到下一台后端服务器。
 	}
 
 2. 如果proxy_pass指令后面没有指定URI，则请求会以客户端发送的形式发送到后端服务器。
+
 3. 当location使用正则表达式指定时，proxy_pass指令后面不要使用URI。
+
+示例1：
+location /test/ {
+	proxy_pass http://172.17.100.1;
+}
+说明：当用户访问的是/test/index.html时，则代理服务器会重定向到http://172.17.100.1/test/index.html
+
+示例2：
+location /test/ {
+	proxy_pass http://172.17.100.1/;
+}
+说明：当用户访问的是/test/index.html时，则代理服务器会重定向到http://172.17.100.1/index.html
+
+以上示例就说明了，proxy_pass指令中有没有增加URI的区别。
+
 ```
 
 * proxy_pass_request_body
@@ -280,6 +296,54 @@ off：不会将请求到下一台后端服务器。
 作用：允许在发送到后端服务器的请求头中重新定义或者增加字段。
 value可以包含文本、变量或者是两者的组合。
 如果value为空的字符串，则该字段不会传递到后端服务器。如：proxy_set_header Accept-Encoding "";
+```
+
+* proxy_redirect
+```
+语法格式：
+	proxy_redirect default;
+	proxy_redirect off;
+	proxy_redirect <redirect> <replacement>;
+默认值:	
+	proxy_redirect default;
+
+作用：Nginx代理服务器对后端服务器发来的响应头中的Location字段和Refresh字段进行修改。Location字段和Refresh字段可以让客户端请求一个新的URL。
+
+off：表示取消当前等级的所有proxy_redirect指令。
+default：表示由proxy_pass和location共同组成replacement。但是proxy_pass中不能使用变量，否则的话不能使用default。
+
+示例1：
+假设代理服务器返回的响应头字段的Location：http://localhost:8000/two/some/uri/
+则：proxy_redirect http://localhost:8000/two/ http://frontend/one/;
+将会把该字符串重写为：Location:http://frontend/one/some/uri
+
+示例2：将replacement中server name省略
+proxy_redirect http://localhost:8000/two/ /;
+解释：这种将会把主服务器的地址和端口作为替代后的地址和端口。
+
+示例3：default
+下面两个location是等价的。
+
+location /one/ {
+    proxy_pass     http://upstream:port/two/;
+    proxy_redirect default;
+}
+
+location /one/ {
+    proxy_pass     http://upstream:port/two/;
+    proxy_redirect http://upstream:port/two/ /one/;
+}
+
+示例4：redirect和replacement中都可以使用变量。
+proxy_redirect http://localhost:8000/ http://$host:$server_port/;
+proxy_redirect http://$proxy_host:8000/ /;
+
+示例5：redirect中使用正则表达式。
+~：表示区分大小写。
+~*：表示不区分大小写。
+
+proxy_redirect ~^(http://[^:]+):\d+(/.+)$ $1$2;
+proxy_redirect ~*/user/([^/]+)/(.+)$      http://$1.example.com/$2;
 ```
 
 * 变量

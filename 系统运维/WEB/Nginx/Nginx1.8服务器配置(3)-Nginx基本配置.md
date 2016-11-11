@@ -248,6 +248,13 @@ none：表示所有的浏览器都开启keepalive。
 server_name  www.felix.com felix.com
 server_name *.felix.com
 server_name .felix.com
+
+示例：禁止使用IP地址访问(server_name _;)
+server {
+    listen 80 default_server;
+    server_name _;
+    return 444;
+}
 ```
 * resolver
 ```
@@ -514,6 +521,11 @@ path：指定日志存储位置。记录到syslog的写法如下：
 	access_log syslog:server=172.17.100.1:12345,facility=local7,tag=nginx,serverity=info combined
 format：指定记录日志时使用的log_format
 if：将满足指定条件的信息记录下来。如果if后面的条件值为0或者是空的字符串，则不会被记录。
+
+示例：
+location = /favicon.ico {
+	access_log off;
+} 
 ```
 
 * log_format
