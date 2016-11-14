@@ -508,6 +508,13 @@ gzip_vary on;
 ```
 
 # log
+* log_not_found
+```
+ÓÃÓÚhttp¡¢server¡¢location¶ÎÖÐ¡£
+Ä¬ÈÏÖµ£ºlog_not_found on;
+×÷ÓÃ£º¶ÔÓÚÃ»ÓÐÕÒµ½µÄÎÄ¼þÊÇ·ñ½«Æä×÷Îªerror log¼ÇÂ¼µ½error_logÎÄ¼þÖÐ¡£
+```
+
 * access_log
 ```
 Óï·¨¸ñÊ½£º
@@ -525,6 +532,7 @@ if£º½«Âú×ãÖ¸¶¨Ìõ¼þµÄÐÅÏ¢¼ÇÂ¼ÏÂÀ´¡£Èç¹ûifºóÃæµÄÌõ¼þÖµÎª0»òÕßÊÇ¿ÕµÄ×Ö·û´®£¬Ôò²»»á±
 Ê¾Àý£º
 location = /favicon.ico {
 	access_log off;
+	log_not_found off;
 } 
 ```
 
