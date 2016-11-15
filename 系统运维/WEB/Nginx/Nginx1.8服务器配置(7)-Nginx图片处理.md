@@ -256,3 +256,52 @@ T 参数按请求宽高比例按比例缩放/放大到指定尺寸（ 图片缩略图大小可能小于请求的宽高
 
 W 参数按请求宽高比例缩放/放大到指定尺寸，空白处填充白色背景颜色（ 图片缩略图大小等于请求的宽高 ）
 ```
+
+* 示例1 图片水印
+```
+location / {
+    root   html;
+    index  index.html index.htm;
+
+    image on;
+    image_output on;
+    image_water on;
+    image_water_type 0;
+    image_water_file "/usr/local/source/nginx18/html/logo.png";
+    image_water_pos 9;
+    image_water_min 100 100;
+    image_water_transparent 50;
+}
+```
+
+![Nginx图片水印](https://github.com/felix1115/Docs/blob/master/Images/nginx_water_p.png)
+
+
+* 示例2 文字水印
+```
+location / {
+      root   html;
+      index  index.html index.htm;
+
+      image on;
+      image_output on;
+      image_water on;
+      image_water_type 1;
+      image_water_pos 9;
+      image_water_min 100 100;
+      image_water_text "Kakao中国";
+      image_water_color "#0088cc";
+      image_water_transparent 50;
+      image_water_font "/usr/local/source/nginx18/fonts/MSYH.TTF";
+      image_water_font_size 25;
+}
+
+说明：
+1. 这里使用系统自带的gd库(gd-devel)，使用编译安装gd没有测试成功。
+2. 如果文字水印要支持中文，需要使用支持中文的字体。否则，看到的可能会是乱码。
+```
+
+
+![Nginx图片水印](https://github.com/felix1115/Docs/blob/master/Images/nginx_water_t.png)
+
+
