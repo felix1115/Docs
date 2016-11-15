@@ -14,18 +14,18 @@ none：表示请求头中没有Referer字段。
 blocked：表示请求头中有Referer字段，但是该字段的值已经被防火墙或者是代理服务器删除了，不是以"http://"或者是"https://"开头
 server_names：请求头的Referer字段包含其中一个server name。
 string：表示任意的字符串。可以是一个server name或者是server name和URI的结合，可以使用在server name的开头和结尾可以使用*。并且不会检查Referer字段的服务器的端口号。
-	也可以使用正则表达式进行匹配，如果要使用正则表达式，则第一个符号必须是"~"，并且表达式匹配的内容应该是"http://"或者是"https://"以后的内容。
+    也可以使用正则表达式进行匹配，如果要使用正则表达式，则第一个符号必须是"~"，并且表达式匹配的内容应该是"http://"或者是"https://"以后的内容。
 ```
 
 * 配置示例
 ```
 location ~ \.(png|jpg|jpeg|gif)$ {
-	valid_referers none blocked server_names
-			*.kakaogift.cn  *.kakaogift.com;
+    valid_referers none blocked server_names
+            *.kakaogift.cn  *.kakaogift.com;
 
-	if ($invalid_referer) {
-		return 403;
-	}   
+    if ($invalid_referer) {
+        return 403;
+    }   
 } 
 ```
 
@@ -34,9 +34,9 @@ location ~ \.(png|jpg|jpeg|gif)$ {
 ```
 1. rewrite模块所提供的指令，在server段中，根据出现的先后顺序执行。
 2. 下列情况被重复执行：
-	2.1 根据请求的URI搜索location
-	2.2 在location内部，rewrite模块所提供的指令被顺序的执行。
-	2.3 如果请求的URI被重写，则重复此过程。但是重写最多不超过10次，否则会出现500(Internal server error)
+    2.1 根据请求的URI搜索location
+    2.2 在location内部，rewrite模块所提供的指令被顺序的执行。
+    2.3 如果请求的URI被重写，则重复此过程。但是重写最多不超过10次，否则会出现500(Internal server error)
 ```
 
 * break
@@ -72,10 +72,10 @@ condition可能的情况如下：
 1. condition是一个变量。如果变量的值为空字符串或者是0，则为假。if ($invalid_referer) { ... }
 2. 将变量和字符串使用"="或"!="进行比较。 if ($flag = "f") { ... }
 3. 使用正则表达式进行匹配
-	~：表示匹配，区分大小写。
-	~*：表示匹配，不区分大小写。
-	!~：表示不匹配，区分大小写。
-	!~*：表示不匹配，不区分大小写。
+    ~：表示匹配，区分大小写。
+    ~*：表示匹配，不区分大小写。
+    !~：表示不匹配，区分大小写。
+    !~*：表示不匹配，不区分大小写。
 4. 检查文件是否存在。-f和!-f
 5. 检查目录是否存在。-d和!-f
 6. 检查文件、目录或符号链接是否存在。-e和!-e

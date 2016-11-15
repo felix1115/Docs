@@ -31,28 +31,28 @@ worker_priority <number>：指定worker进程的优先级。默认值为0，范围是-20到19，值越
 worker_processes <number>：指定启动worker进程的数量。默认值为1. 通常设置为和CPU核心数一致即可。获取CPU核心数：cat /proc/cpuinfo  | grep processor | wc -l
 
 worker_cpu_affinity <cpumask>：设置CPU和worker进程的亲和力。将worker进程绑定到CPU上。
-	示例：
-	worker_processes 4;
-	worker_cpu_affinity 0001 0010 0100 1000;
-	规则设定：
-	（1）cpu有多少个核，就有几位数，1代表内核开启，0代表内核关闭
-	（2）worker_processes最多开启8个，8个以上性能就不会再提升了，而且稳定性会变的更低，因此8个进程够用了
-		worker_processes 8;
-		worker_cpu_affinity 00000001 00000010 00000100 00001000 00010000 00100000 01000000 10000000;
-		
-		2核CPU，开启8进程：
-		worker_processes  8;  
-		worker_cpu_affinity 01 10 01 10 01 10 01 10;
-		
-		8核CPU，开启2进程：
-		worker_processes  2;
-		worker_cpu_affinity 10101010 01010101;
-		说明：10101010表示开启了第2,4,6,8内核，01010101表示开始了1,3,5,7内核
+    示例：
+    worker_processes 4;
+    worker_cpu_affinity 0001 0010 0100 1000;
+    规则设定：
+    （1）cpu有多少个核，就有几位数，1代表内核开启，0代表内核关闭
+    （2）worker_processes最多开启8个，8个以上性能就不会再提升了，而且稳定性会变的更低，因此8个进程够用了
+        worker_processes 8;
+        worker_cpu_affinity 00000001 00000010 00000100 00001000 00010000 00100000 01000000 10000000;
+        
+        2核CPU，开启8进程：
+        worker_processes  8;  
+        worker_cpu_affinity 01 10 01 10 01 10 01 10;
+        
+        8核CPU，开启2进程：
+        worker_processes  2;
+        worker_cpu_affinity 10101010 01010101;
+        说明：10101010表示开启了第2,4,6,8内核，01010101表示开始了1,3,5,7内核
 
 worker_rlimit_nofile <number>：指定一个worker进程可以打开的文件描述符数量。worker_connections不能超过该值。
 
 error_log file|stderr|syslog:server-address[,parameter-value] [debug | info | notice | warn | error | crit | alert | emerg]：指定error log的存储位置。可以用在main、http、mail、stream、server和location区块中。如果没有指定日志等级，则默认的日志等级为error。
-		
+        
 ```
 
 * main区块配置示例
@@ -77,27 +77,27 @@ use：指定处理请求的方式。常用的方式有：select、poll、kqueue（适用于FreeBSD4.1+，
 multi_accept on|off：默认值为off。on表示一个worker进程一次接收多个请求，off表示一个worker进程一次只接收一个请求。
 
 accept_mutex on|off：默认值为on。
-	当设置为on时，多个worker进程将会按照顺序接收新的连接，但是只有一个worker进程会被唤醒，其他的worker进程将会继续保持睡眠状态。
-	当设置为off时，所有的worker进程将会被通知，但是只有一个worker进程可以获得这个连接，其他的worker进程会重新进入休眠状态。这称为“惊群问题”。
-	如果网站访问量比较大，可以关闭它。
-	
+    当设置为on时，多个worker进程将会按照顺序接收新的连接，但是只有一个worker进程会被唤醒，其他的worker进程将会继续保持睡眠状态。
+    当设置为off时，所有的worker进程将会被通知，但是只有一个worker进程可以获得这个连接，其他的worker进程会重新进入休眠状态。这称为“惊群问题”。
+    如果网站访问量比较大，可以关闭它。
+    
 worker_connections <number>：默认值为512.指定一个worker进程能同时处理的连接数。
-	* 通过worker_processes和worker_connections能够计算出最大客户端连接数：
+    * 通过worker_processes和worker_connections能够计算出最大客户端连接数：
     max_clients=worker_processes * worker_connections
     * 在反向代理环境中，最大客户端连接数:
     max_clients=worker_processes * worker_connections/4
     原因：默认情况下，一个浏览器会对服务器打开两个连接，Nginx使用来自同一个池中的FDS（文件描述符）来连接上游服务器。
     
-	最终的结论：http 1.1协议下，由于浏览器默认使用两个并发连接,因此计算方法：
+    最终的结论：http 1.1协议下，由于浏览器默认使用两个并发连接,因此计算方法：
     * nginx作为http服务器的时候；
     max_clients = worker_processes * worker_connections/2
     
-	* nginx作为反向代理服务器的时候：
+    * nginx作为反向代理服务器的时候：
     max_clients = worker_processes * worker_connections/4
     
-	* clients与用户数：
-	同一时间的clients(客户端数)和用户数还是有区别的，当一个用户请求发送一个连接时这两个是相等的，但是当一个用户默认发送多个连接请求的时候，clients数就是用户数*默认发送的连接并发数了。
-	
+    * clients与用户数：
+    同一时间的clients(客户端数)和用户数还是有区别的，当一个用户请求发送一个连接时这两个是相等的，但是当一个用户默认发送多个连接请求的时候，clients数就是用户数*默认发送的连接并发数了。
+    
 debug_connection <address>|<cidr>|unix: 没有默认值。为指定的客户端开启debug log，其他的客户端将会使用error_log的设置。需要在编译时开启--with-debug选项。如：
     debug_connection 127.0.0.1;
     debug_connection 172.17.100.0/24;
@@ -308,25 +308,25 @@ tcp_nodelay和tcp_nopush是互斥的。
 
 
 通常下列设置，可以提高性能：
-sendfile 	on;
-tcp_nopush 	on;
-tcp_nodelay	off;
+sendfile    on;
+tcp_nopush  on;
+tcp_nodelay off;
 ```
 
 * types
 ```
 语法格式：
-	types {
-		mime-type filename-extensions;
-		...
-	}
+    types {
+        mime-type filename-extensions;
+        ...
+    }
 作用：映射文件名扩展到指定的MIME类型。文件名扩展是不区分大小写的。
 
 示例：
 types {
-	application/octet-stream bin exe dll;
-	application/octet-stream deb;
-	application/octet-stream dmg;
+    application/octet-stream bin exe dll;
+    application/octet-stream deb;
+    application/octet-stream dmg;
 }
 ```
 
@@ -356,22 +356,22 @@ error_page 500 502 503 504 /50x.html;
 
 
 * 改变响应状态码
-	可以用=response改变响应状态码
-	示例：error_page 404 =200 /test.html;
+    可以用=response改变响应状态码
+    示例：error_page 404 =200 /test.html;
 
 * 重定向到指定的URL
-	示例：error_page 404 http://www.felix.com;
-	这种情况下，将会产生一个302(临时重定向)的状态码给客户端。
-	error_page 404 =301 http://www.felix.com;
-	这样就会产生一个301(永久重定向)的状态码给客户端。
+    示例：error_page 404 http://www.felix.com;
+    这种情况下，将会产生一个302(临时重定向)的状态码给客户端。
+    error_page 404 =301 http://www.felix.com;
+    这样就会产生一个301(永久重定向)的状态码给客户端。
 
 * 传递error_page到命名的location
-	location / {
-		error_page 404 = @fallback;
-	}
-	location @fallback {
-		proxy_pass http://backend;
-	}
+    location / {
+        error_page 404 = @fallback;
+    }
+    location @fallback {
+        proxy_pass http://backend;
+    }
 ```
 
 * alias
@@ -407,8 +407,8 @@ location分为两种：普通location和正则location。
 location的匹配顺序：先匹配普通的location，再匹配正则location。
 
 * 普通location的匹配顺序：最大前缀匹配。和出现在配置文件中的先后顺序无关。
-	示例:
-	location /prefix 和location /prefix/test，如果用户请求为/prefix/test/a.html，则两个location都满足，根据最大前缀匹配，则会匹配/prefix/test这个。
+    示例:
+    location /prefix 和location /prefix/test，如果用户请求为/prefix/test/a.html，则两个location都满足，根据最大前缀匹配，则会匹配/prefix/test这个。
 
 * 普通location根据最大前缀匹配出结果后，还要根据正则location进行继续匹配。
 说明：如果继续搜索的正则location也有匹配上的，则正则location会覆盖普通location的最大前缀匹配。如果正则location没有匹配上，则以普通location的最大前缀匹配为结果。
@@ -524,15 +524,15 @@ access_log off;
 作用：指定用户访问的日志记录位置。
 off：表示关闭日志记录功能。
 path：指定日志存储位置。记录到syslog的写法如下：
-	error_log syslog:server=172.17.100.1 debug
-	access_log syslog:server=172.17.100.1:12345,facility=local7,tag=nginx,serverity=info combined
+    error_log syslog:server=172.17.100.1 debug
+    access_log syslog:server=172.17.100.1:12345,facility=local7,tag=nginx,serverity=info combined
 format：指定记录日志时使用的log_format
 if：将满足指定条件的信息记录下来。如果if后面的条件值为0或者是空的字符串，则不会被记录。
 
 示例：
 location = /favicon.ico {
-	access_log off;
-	log_not_found off;
+    access_log off;
+    log_not_found off;
 } 
 ```
 
@@ -543,38 +543,38 @@ location = /favicon.ico {
 语法格式：log_format <name> <string> ...
 name：表示被access_log引用的名字。
 string：表示要引用的变量名。
-	$bytes_sent：发送到客户端的字节数。包括响应头。
-	$body_bytes_sent：发送到客户端的字节数。不包括响应头。
-	$content_length：请求头中的Content-Length字段。
-	$content_type：请求头中Content-Type字段。
-	$connection：客户端的连接序列号。
-	$connection_requests：通过该连接发送的当前请求数。
-	$request_length：客户端发送的HTTP请求的长度(包括请求行、请求头、请求体)。
-	$request_time：表示处理请求所花费的时间(单位是秒，可以显示到毫秒级)。这个时间表示的是从读取客户端发来的请求的第一个字节开始，到最后一个字节发送到客户端后的日志写入所花费的总时间。
-	$status：响应状态码。
-	$time_iso8601：使用ISO 8601的标准格式表示的本地时间。2016-11-03T13:00:01+08:00
-	$time_local：通用日志格式表示的本地时间。03/Nov/2016:13:00:01 +0800
-	$document_root：当前请求的root或alias指令的值。
-	$document_uri；用户请求的URI。
-	$host：用户访问的主机。顺序如下：请求行的主机名、请求头的Host字段、匹配请求的server name。
-	$hostname：主机名。
-	$https：如果使用ssl模式，则为on，否则为空。
-	$nginx_version：nginx的版本。
-	$query_string：查询字符串。
-	$remote_addr：客户端地址
-	$remote_port：客户端端口
-	$remote_user：基本身份认证的用户名
-	$request：完整的原始请求行的内容。请求行包括：请求方法、请求的URL、HTTP协议版本。
-	$request_body：请求体
-	$request_uri：完整的请求的URI。
-	$request_method：请求方法。
-	$scheme：请求的scheme。如http、https
-	$server_addr：接收请求的服务器的地址。
-	$server_port：接收请求的服务器的端口。
-	$server_name：接收请求的服务器的名称。
-	$server_protocol：请求的协议。如HTTP/1.0、HTTP/1.1、HTTP/2.0
-	$http_<name>：name表示的是任意的请求头字段名称。其中name是小写的，用下划线来代替请求头中的破折号。如http_user_agent
-	
+    $bytes_sent：发送到客户端的字节数。包括响应头。
+    $body_bytes_sent：发送到客户端的字节数。不包括响应头。
+    $content_length：请求头中的Content-Length字段。
+    $content_type：请求头中Content-Type字段。
+    $connection：客户端的连接序列号。
+    $connection_requests：通过该连接发送的当前请求数。
+    $request_length：客户端发送的HTTP请求的长度(包括请求行、请求头、请求体)。
+    $request_time：表示处理请求所花费的时间(单位是秒，可以显示到毫秒级)。这个时间表示的是从读取客户端发来的请求的第一个字节开始，到最后一个字节发送到客户端后的日志写入所花费的总时间。
+    $status：响应状态码。
+    $time_iso8601：使用ISO 8601的标准格式表示的本地时间。2016-11-03T13:00:01+08:00
+    $time_local：通用日志格式表示的本地时间。03/Nov/2016:13:00:01 +0800
+    $document_root：当前请求的root或alias指令的值。
+    $document_uri；用户请求的URI。
+    $host：用户访问的主机。顺序如下：请求行的主机名、请求头的Host字段、匹配请求的server name。
+    $hostname：主机名。
+    $https：如果使用ssl模式，则为on，否则为空。
+    $nginx_version：nginx的版本。
+    $query_string：查询字符串。
+    $remote_addr：客户端地址
+    $remote_port：客户端端口
+    $remote_user：基本身份认证的用户名
+    $request：完整的原始请求行的内容。请求行包括：请求方法、请求的URL、HTTP协议版本。
+    $request_body：请求体
+    $request_uri：完整的请求的URI。
+    $request_method：请求方法。
+    $scheme：请求的scheme。如http、https
+    $server_addr：接收请求的服务器的地址。
+    $server_port：接收请求的服务器的端口。
+    $server_name：接收请求的服务器的名称。
+    $server_protocol：请求的协议。如HTTP/1.0、HTTP/1.1、HTTP/2.0
+    $http_<name>：name表示的是任意的请求头字段名称。其中name是小写的，用下划线来代替请求头中的破折号。如http_user_agent
+    
 ```
 
 * Nginx所有变量列表
@@ -639,8 +639,8 @@ any：表示只要满足认证或者是allow就可以。(满足其一即可)
 指定可以访问服务器的白名单设置
 
 http {
-	...
-	include whitelist.conf;
+    ...
+    include whitelist.conf;
 }
 
 
@@ -718,15 +718,15 @@ nginx_test01:iExwE35H1j7oA
 * 配置示例
 ```
 location /felix {
-	root html;
-	index index.html; 
+    root html;
+    index index.html; 
 
-	allow 172.17.100.1;
-	deny all;
-	satisfy any;
+    allow 172.17.100.1;
+    deny all;
+    satisfy any;
 
-	auth_basic "need auth";
-	auth_basic_user_file ../auth/users;
+    auth_basic "need auth";
+    auth_basic_user_file ../auth/users;
 }
 
 ```
@@ -778,9 +778,9 @@ autoindex_localtime on;
 说明：在编译时，需要启用--with-http_stub_status_module
 
 location /status {
-	stub_status;
-	allow 172.17.100.0/24;
-	deny all;
+    stub_status;
+    allow 172.17.100.0/24;
+    deny all;
 }
 ```
 

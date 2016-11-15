@@ -73,12 +73,12 @@ nginx version: nginx/1.8.1
 ```
 ÓÃÓÚlocation¶ÎÖĞ¡£image_filter¿ÉÒÔÖ¸¶¨¶à¸ö¡£
 Óï·¨¸ñÊ½
-	image_filter off;
-	image_filter test;
-	image_filter size;
-	image_filter rotate 90 | 180 | 270;
-	image_filter resize <width> <height>;
-	image_filter crop <width> <height>;
+    image_filter off;
+    image_filter test;
+    image_filter size;
+    image_filter rotate 90 | 180 | 270;
+    image_filter resize <width> <height>;
+    image_filter crop <width> <height>;
 Ä¬ÈÏÖµ£ºimage_filter off;
 ×÷ÓÃ£ºÉèÖÃÍ¼Æ¬µÄ×ª»»ÀàĞÍ¡£
 
@@ -133,21 +133,21 @@ crop <width> <height>£ºÊÊµ±µÄËõ¼õÍ¼Æ¬µÄ¿í¶ÈºÍ¸ß¶È¡£Èç¹ûÖ»Ïë¼õÉÙÆäÖĞÒ»¸öÎ¬¶È£¬ÔòÁ
 
 ```
 location ~ \.(jpg|jpeg|png|gif)!(\d+)!(\d+) {
-	set $w $2;
-	set $h $3;
-	
-	rewrite (.*)\.(jpg|jpeg|gif|png)!(\d+)!(\d+) $1.$2 break;
-	image_filter_buffer 10M;
-	image_filter resize $w $h;
+    set $w $2;
+    set $h $3;
+    
+    rewrite (.*)\.(jpg|jpeg|gif|png)!(\d+)!(\d+) $1.$2 break;
+    image_filter_buffer 10M;
+    image_filter resize $w $h;
 }
 
 location ~ \.(jpg|jpeg|png|gif)$ {
-	valid_referers none blocked server_names
-		*.kakaogift.cn *.kakaogift.com;
+    valid_referers none blocked server_names
+        *.kakaogift.cn *.kakaogift.com;
 
-	if ($invalid_referer) {
-		rewrite (.*)\.(jpg|gif|jpeg|png)$ /logo.png break;
-	}
+    if ($invalid_referer) {
+        rewrite (.*)\.(jpg|gif|jpeg|png)$ /logo.png break;
+    }
 }
 
 ```

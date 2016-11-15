@@ -117,8 +117,8 @@ lockfile="/var/lock/subsys/nginx"
 prog="nginx"
 
 getNginxMaster() {
-	number=$(ps aux | grep 'nginx: master' | grep -v 'grep' | wc -l)
-	return $number
+    number=$(ps aux | grep 'nginx: master' | grep -v 'grep' | wc -l)
+    return $number
 }
 
 start() {
@@ -130,7 +130,7 @@ start() {
     retval=$?
     echo
     [ $retval -eq 0 ] && touch $lockfile
-	return $retval
+    return $retval
 }
 
 stop() {
@@ -140,34 +140,34 @@ stop() {
     retval=$?
     echo
     [ $retval -eq 0 ] && rm -f $lockfile
-	return $retval
+    return $retval
 }
 
 restart() {
-	configtest_quiet || configtest || return $?
-	stop
-	sleep 1
+    configtest_quiet || configtest || return $?
+    stop
+    sleep 1
 
-	while :
-	do
-		getNginxMaster
-		retval=$?
-		if [ $retval -eq 1 ]; then
-			echo  -n "Waiting for shutdown: $prog"
-			echo
-			sleep 2
-		else
-			success
-			break
-		fi
-	done
+    while :
+    do
+        getNginxMaster
+        retval=$?
+        if [ $retval -eq 1 ]; then
+            echo  -n "Waiting for shutdown: $prog"
+            echo
+            sleep 2
+        else
+            success
+            break
+        fi
+    done
 
-	start
+    start
 }
 
 graceful-restart() {
     #graceful restart program
-	configtest_quiet || configtest || return $?
+    configtest_quiet || configtest || return $?
     echo -n "graceful restart $prog: "
     killproc $prog -HUP
     retval=$?
@@ -176,7 +176,7 @@ graceful-restart() {
 
 reload() {
     #reload config file
-	configtest_quiet || configtest || return $?
+    configtest_quiet || configtest || return $?
     echo -n "Reload config $config: "
     killproc $prog -HUP
     retval=$?
@@ -188,7 +188,7 @@ configtest() {
 }
 
 configtest_quiet() {
-	configtest &> /dev/null
+    configtest &> /dev/null
 }
 
 
@@ -210,15 +210,15 @@ case $1 in
         $1
         ;;
     configtest)
-		configtest_quiet
-		retval=$?
-		if [ $retval -eq 0 ]; then
-			echo -n "Check config: $config "
-			success
-		else
-			configtest
-		fi
-		echo	
+        configtest_quiet
+        retval=$?
+        if [ $retval -eq 0 ]; then
+            echo -n "Check config: $config "
+            success
+        else
+            configtest
+        fi
+        echo    
         ;;
     *)
         echo "Usage: $0 start|stop|restart|status|configtest|graceful-restart|reload"
@@ -244,8 +244,8 @@ tcmalloc="yes"
 tcmallow_path="$prefix/tcmalloc"
 
 getNginxMaster() {
-	number=$(ps aux | grep 'nginx: master' | grep -v 'grep' | wc -l)
-	return $number
+    number=$(ps aux | grep 'nginx: master' | grep -v 'grep' | wc -l)
+    return $number
 }
 
 start() {
@@ -257,7 +257,7 @@ start() {
     retval=$?
     echo
     [ $retval -eq 0 ] && touch $lockfile
-	return $retval
+    return $retval
 }
 
 stop() {
@@ -267,36 +267,36 @@ stop() {
     retval=$?
     echo
     [ $retval -eq 0 ] && rm -f $lockfile
-	if [ $tcmalloc == 'yes' ]; then
-		rm -f $tcmallow_path/*
-	fi
-	return $retval
+    if [ $tcmalloc == 'yes' ]; then
+        rm -f $tcmallow_path/*
+    fi
+    return $retval
 }
 
 restart() {
-	configtest_quiet || configtest || return $?
-	stop
-	sleep 1
+    configtest_quiet || configtest || return $?
+    stop
+    sleep 1
 
-	while :
-	do
-		getNginxMaster
-		retval=$?
-		if [ $retval -eq 1 ]; then
-			echo  -n "Waiting for shutdown $prog"
-			echo
-			sleep 2
-		else
-			break
-		fi
-	done
+    while :
+    do
+        getNginxMaster
+        retval=$?
+        if [ $retval -eq 1 ]; then
+            echo  -n "Waiting for shutdown $prog"
+            echo
+            sleep 2
+        else
+            break
+        fi
+    done
 
-	start
+    start
 }
 
 graceful-restart() {
     #graceful restart program
-	configtest_quiet || configtest || return $?
+    configtest_quiet || configtest || return $?
     echo -n "graceful restart $prog: "
     killproc $prog -HUP
     retval=$?
@@ -305,7 +305,7 @@ graceful-restart() {
 
 reload() {
     #reload config file
-	configtest_quiet || configtest || return $?
+    configtest_quiet || configtest || return $?
     echo -n "Reload config $config: "
     killproc $prog -HUP
     retval=$?
@@ -317,7 +317,7 @@ configtest() {
 }
 
 configtest_quiet() {
-	configtest &> /dev/null
+    configtest &> /dev/null
 }
 
 
@@ -339,15 +339,15 @@ case $1 in
         $1
         ;;
     configtest)
-		configtest_quiet
-		retval=$?
-		if [ $retval -eq 0 ]; then
-			echo -n "Check config: $config "
-			success
-		else
-			configtest
-		fi
-		echo	
+        configtest_quiet
+        retval=$?
+        if [ $retval -eq 0 ]; then
+            echo -n "Check config: $config "
+            success
+        else
+            configtest
+        fi
+        echo    
         ;;
     *)
         echo "Usage: $0 start|stop|restart|status|configtest|graceful-restart|reload"

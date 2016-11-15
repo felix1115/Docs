@@ -183,7 +183,7 @@ off：表示取消从前一个配置级别继承的proxy_bind配置，并且让系统自动分配一个本地的I
 
 * proxy_temp_path
 ```
-Syntax:	proxy_temp_path path [level1 [level2 [level3]]];
+Syntax: proxy_temp_path path [level1 [level2 [level3]]];
 Default: proxy_temp_path proxy_temp;
 
 作用：指定一个目录用于存储从后端服务器接收的临时数据文件。
@@ -241,10 +241,10 @@ off：不会将请求到下一台后端服务器。
 如：proxy_pass http://localhost:8000/uri/;
 
 1. 如果proxy_pass指令指定了URI，当请求转发到此服务器时，被location匹配到的请求的URI将会被proxy_pass指令后所指定的URI进行替换。
-	示例：当用户访问的是URI是name时，将会显示127.0.0.1/remote/下的内容。地址栏中不会有显示。
-	location /name/ {
-		proxy_pass http://127.0.0.1/remote/;
-	}
+    示例：当用户访问的是URI是name时，将会显示127.0.0.1/remote/下的内容。地址栏中不会有显示。
+    location /name/ {
+        proxy_pass http://127.0.0.1/remote/;
+    }
 
 2. 如果proxy_pass指令后面没有指定URI，则请求会以客户端发送的形式发送到后端服务器。
 
@@ -252,13 +252,13 @@ off：不会将请求到下一台后端服务器。
 
 示例1：
 location /test/ {
-	proxy_pass http://172.17.100.1;
+    proxy_pass http://172.17.100.1;
 }
 说明：当用户访问的是/test/index.html时，则代理服务器会重定向到http://172.17.100.1/test/index.html
 
 示例2：
 location /test/ {
-	proxy_pass http://172.17.100.1/;
+    proxy_pass http://172.17.100.1/;
 }
 说明：当用户访问的是/test/index.html时，则代理服务器会重定向到http://172.17.100.1/index.html
 
@@ -301,11 +301,11 @@ value可以包含文本、变量或者是两者的组合。
 * proxy_redirect
 ```
 语法格式：
-	proxy_redirect default;
-	proxy_redirect off;
-	proxy_redirect <redirect> <replacement>;
-默认值:	
-	proxy_redirect default;
+    proxy_redirect default;
+    proxy_redirect off;
+    proxy_redirect <redirect> <replacement>;
+默认值:    
+    proxy_redirect default;
 
 作用：Nginx代理服务器对后端服务器发来的响应头中的Location字段和Refresh字段进行修改。Location字段和Refresh字段可以让客户端请求一个新的URL。
 

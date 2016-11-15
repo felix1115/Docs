@@ -14,17 +14,17 @@ LOGDIR="/var/log/nginx"
 PID="/var/run/nginx.pid"
 
 if [ ! -f ${LOGDIR}/${ACCESS_LOG} ];then
-	echo
+    echo
     echo "Can not find the $ACCESS_LOG in $LOGDIR"
-	echo
+    echo
     exit 5
 fi
 
 if [ ! -f $PID ]; then
-	echo
-	echo "Nginx seems is not running! Quit"
-	echo
-	exit 6
+    echo
+    echo "Nginx seems is not running! Quit"
+    echo
+    exit 6
 fi
 
 [ -d $BACKUPDIR ] || mkdir $BACKUPDIR
@@ -62,17 +62,17 @@ LOGDIR="/usr/local/source/nginx18/logs"
 PID="/var/run/nginx.pid"
 
 if [ ! -f ${LOGDIR}/${ACCESS_LOG} ];then
-	echo
+    echo
     echo "Can not find the $ACCESS_LOG in $LOGDIR"
-	echo
+    echo
     exit 5
 fi
 
 if [ ! -f $PID ]; then
-	echo
-	echo "Nginx seems is not running! Quit"
-	echo
-	exit 6
+    echo
+    echo "Nginx seems is not running! Quit"
+    echo
+    exit 6
 fi
 
 [ -d $BACKUPDIR ] || mkdir $BACKUPDIR &> /dev/null
