@@ -212,6 +212,15 @@ Default: proxy_temp_path proxy_temp;
 如果超时(默认60s，可以用 proxy_read_timeout 设置)，Nginx会主动断开连接，记录504。
 ```
 
+* proxy_ignore_headers 
+```
+用于http、server、location段中。
+语法：proxy_ignore_headers <field> ...;
+作用：忽略从后端服务器传递过来的某些字段。下面的这些字段可以被忽略：
+    X-Accel-Redirect、X-Accel-Expires、X-Accel-Limit-Rate、Z-Accel-Buffering
+    X-Accel-Charset、Expires、Cache-Control、Set-Cookie、Vary
+```
+
 * proxy_next_upstream
 ```
 语法格式：proxy_next_upstream error | timeout | invalid_header | http_500 | http_502 | http_503 | http_504 | http_403 | http_404 | non_idempotent | off ...;

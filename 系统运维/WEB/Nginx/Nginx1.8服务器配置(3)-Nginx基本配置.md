@@ -386,6 +386,43 @@ error_page 500 502 503 504 /50x.html;
 用于设置nginx的默认首页文件。处理以“/”结尾的请求。查找顺序为index所定义的顺序。如果找到，则不会查找下一个。
 ```
 
+* add_header
+```
+用于http, server, location, if in location段中。
+语法格式：add-_header <name> <value> [always]
+作用：在响应头中增加任意字段。默认情况下，只有在响应码是200、201、204、206、301、302、303、304、307时才会添加。
+
+value可以包含变量。
+always表示不管响应码是什么，都添加指定的字段。
+
+示例：
+add_header Cache-Control no-cache;
+add_header Cache-Control no-store;
+add_header Cache-Control max-age=100;
+```
+
+* expires
+```
+用于http, server, location, if in location段中。
+语法格式：
+    expires [modified] <time>;
+    expires epoch | max | off;
+默认值：expires off;
+作用：在响应头中为响应码是200、201、204、206、301、302、303、304、307的响应添加或修改Expires和Cache-Control字段。time可以是绝对时间，也可以是相对时间。
+
+说明：
+1. Expires字段的值是使用当前时间和time所指定的时间的和。
+2. 如果使用modified字段，则为文件的修改时间和time所指定的时间的和。
+
+epoch：表示设置Expires的值为Thu, 01 Jan 1970 00:00:01 GMT。
+    Cache-Control的值依赖于所指定的time：
+    1. 如果time小于0，则Cache-Control: no-cache。
+    2. 如果time大于等于0，则Cache-Control: max-age=<time>。time的单位是秒。
+max：表示设置Expires的值为最大值：Thu, 31 Dec 2037 23:55:55 GMT，Cache-Control的值为10年。
+
+off：表示关闭该功能。
+```
+
 # location
 * location说明
 ```
@@ -731,6 +768,21 @@ location /felix {
 
 ```
 
+* 破解Basic认证的密码
+```
+1. 使用浏览器的开发者模式，获取请求头中的Authorization字段的值
+Authorization:Basic bmdpbnhfdGVzdDAxOnRlc3QwMQ==
+
+该字段后面的Basic表示Basic认证，后面的一串字符表示Base64编码的用户名和密码
+
+2. 对该串字符进行解码
+[root@vm3 nginx18]# echo "bmdpbnhfdGVzdDAxOnRlc3QwMQ==" | base64 -d ; echo
+nginx_test01:test01
+[root@vm3 nginx18]# 
+
+这里面获取到的就是用户名和密码。
+```
+
 # AutoIndex
 
 > 用于http、server和location段中。如果没有找到index指定所定义的文件，则列出目录下的内容。
@@ -785,7 +837,7 @@ location /status {
 ```
 
 * 输出介绍
-````
+```
 Active connections: 1338 
 server accepts handled requests
  15910 15910 15138 
@@ -799,4 +851,15 @@ requests：总的客户端的请求数。
 Reading：当前nginx正在读取请求头的连接数。
 Writing：当前nginx正在准备响应数据包给客户端的连接数。
 Waiting：表示正在等待下一个请求到来的空闲客户端连接数。通常这个值等于：active - reading - writing
+```
+
+# 个人理解
+* 为什么Cache-Control中的max-age=0或者是no-cache，返回的依旧是304
+```
+1. 服务器返回的Cache-Control字段的值为max-age=0或者是no-cache，表明该资源不会被缓存，但是依然会存储在客户端的磁盘中。
+2. 服务器返回的响应消息中包含Last-Modified和ETag响应头。
+3. 当客户端再次请求同一个URL时，由于响应头中有ETag和Last-Modified，因此在请求头中会含有If-None-Match和If-Modified-Since字段，用于判断服务器端的内容是否有发生变化。
+4. 如果有变化，服务器发送200和新的内容，否则发送304，浏览器继续使用本地缓存。
+
+如果不想让客户端使用缓存，可以使用Cache-Control: no-store。
 ```
