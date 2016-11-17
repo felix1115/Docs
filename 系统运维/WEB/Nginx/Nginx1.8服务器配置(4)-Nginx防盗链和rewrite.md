@@ -49,7 +49,7 @@ location ~ \.(png|jpg|jpeg|gif)$ {
 ```
 用于http、server、location、if段中。
 默认值：rewrite_log off;
-作用：是否启用rewrite log功能。rewrite的log会写入到erro_log中，日志等级为notice。
+作用：是否启用rewrite log功能。rewrite的log会写入到error_log中，日志等级为notice。
 ```
 
 * set
@@ -77,7 +77,7 @@ condition可能的情况如下：
     !~：表示不匹配，区分大小写。
     !~*：表示不匹配，不区分大小写。
 4. 检查文件是否存在。-f和!-f
-5. 检查目录是否存在。-d和!-f
+5. 检查目录是否存在。-d和!-d
 6. 检查文件、目录或符号链接是否存在。-e和!-e
 7. 检查文件是否可执行。-x和!-x
 ```

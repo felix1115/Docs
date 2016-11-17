@@ -338,6 +338,7 @@ types {
 如下的请求表示内部请求：
 1. 被error_page、index、random_index、try_files这些指令重定向的请求。
 2. 被rewrite指令重写的请求。
+3. 从后端服务器发来的响应头中包含X-Accel-Redirect字段的请求会被重定向。
 ```
 
 * error_page
