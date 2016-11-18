@@ -248,3 +248,46 @@ proxy_cache_valid any      1m;
 proxy_no_cache $cookie_nocache $arg_nocache$arg_comment;
 proxy_no_cache $http_pragma    $http_authorization;
 ```
+
+# 本地文件系统缓存的缺点
+```
+上述所有的配置称为本地文件系统缓存，缺点如下：
+1. cache冗余。不同的nginx node间分别存有一份cache。
+2. cache一致性。因为各个Nginx node之间是冗余的，各个节点间cache的失效时间是不同步的。
+3. cache访问速度慢。读磁盘自然会慢一些。
+4. cache效率低。因为各个node各有自己的cache并且是不共享的，即使某个node cache里存了某个请求，如果是另外的nginx node来处理请求有可能还是cache miss。
+```
+
+# 配置示例
+```
+http {
+    upstream backend {
+        server 172.17.100.1:8080 max_fails=2 fail_timeout=30s;
+        server 172.17.100.2 max_fails=2 fail_timeout=30s;
+    }
+    
+    proxy_cache_path /usr/local/source/nginx18/cache levels=1:2 keys_zone=cache:20m use_temp_path=off inactive=60m max_size=20g;
+    proxy_cache_key $scheme$proxy_host$uri$is_args$args;
+
+    server {
+        listen 80;
+        server_name www.felix.com felix.com;
+
+        location / {
+            proxy_cache cache;
+            proxy_cache_use_stale error timeout updating;
+            proxy_cache_lock on;
+            proxy_cache_revalidate on;
+            proxy_cache_min_uses 3;
+            proxy_pass http://backend;
+
+            proxy_http_version 1.1;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header Host $host;
+        }
+
+    }
+
+}
+
+```
