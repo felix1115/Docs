@@ -540,7 +540,7 @@ gzip_buffers 64 8k;
 gzip_comp_level 6;
 gzip_min_length 10k;
 gzip_disable "MSIE [4-6]\.";
-gzip_types text/plain text/css text/xml application/javascript;
+gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
 gzip_http_version 1.1;
 gzip_vary on; 
 ```
@@ -606,6 +606,7 @@ string：表示要引用的变量名。
     $request_body：请求体
     $request_uri：完整的请求的URI。
     $request_method：请求方法。
+    $request_filename：请求的URI对应的文件名在磁盘上的具体物理路径。
     $scheme：请求的scheme。如http、https
     $server_addr：接收请求的服务器的地址。
     $server_port：接收请求的服务器的端口。
@@ -613,6 +614,15 @@ string：表示要引用的变量名。
     $server_protocol：请求的协议。如HTTP/1.0、HTTP/1.1、HTTP/2.0
     $http_<name>：name表示的是任意的请求头字段名称。其中name是小写的，用下划线来代替请求头中的破折号。如http_user_agent
     
+upstream模块提供的变量：
+    $upstream_addr：后端服务器的地址和端口。
+    $upstream_bytes_received：从后端服务器收到的字节数。(需要1.11.4版本)
+    $upstream_cache_status：是否命中缓存。状态有:MISS/BYPASS/EXPIRED/STALE/UPDATING/REVALIDATED/HIT
+    $upstream_connect_time：代理服务器和后端服务器建立连接所花费的时间。
+    $upstream_header_time：从后端服务器接收响应头所花费的时间。
+    $upstream_response_time：从后端服务器接收响应所花费的时间。
+    $upstream_status：从后端服务器获取响应的状态码。
+    $upstream_response_length：从后端服务器获取的响应的长度。
 ```
 
 * Nginx所有变量列表

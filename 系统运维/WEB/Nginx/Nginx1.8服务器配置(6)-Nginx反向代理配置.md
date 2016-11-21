@@ -221,6 +221,23 @@ Default: proxy_temp_path proxy_temp;
     X-Accel-Charset、Expires、Cache-Control、Set-Cookie、Vary
 ```
 
+* proxy_hide_header
+```
+语法格式：proxy_hide_header <field>
+作用：默认情况下，Nginx不会将从后端服务器传递过来的响应头中包含"Date"/"Server"/"X-Pad"/"X-Accel-..."的字段传递到客户端。
+
+该指令用于设置一些其他附加的字段，这个指定的字段将不会传递到客户端。
+```
+
+* proxy_intercept_errors
+```
+默认值：proxy_intercept_errors off;
+作用：当后端服务器的响应状态吗大于或等于300时，是否将其传递到客户端或者是Nginx代理服务器将其拦截并使用error_page进行处理。
+
+on：当响应状态码大于或等于300时，进行拦截。使用nginx的error_page进行处理。一定要配置error_page。
+off：不进行拦截。直接显示到客户端。
+```
+
 * proxy_next_upstream
 ```
 语法格式：proxy_next_upstream error | timeout | invalid_header | http_500 | http_502 | http_503 | http_504 | http_403 | http_404 | non_idempotent | off ...;
