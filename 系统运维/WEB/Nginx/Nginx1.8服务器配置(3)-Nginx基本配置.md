@@ -613,6 +613,8 @@ string：表示要引用的变量名。
     $server_name：接收请求的服务器的名称。
     $server_protocol：请求的协议。如HTTP/1.0、HTTP/1.1、HTTP/2.0
     $http_<name>：name表示的是任意的请求头字段名称。其中name是小写的，用下划线来代替请求头中的破折号。如http_user_agent
+    $args：这个变量等于请求行中(GET请求)的参数，例如foo=123&bar=blahblah;
+    $is_args：如果已经设置变量$args，则这个变量的值为"?"，否则为空。
     
 upstream模块提供的变量：
     $upstream_addr：后端服务器的地址和端口。
@@ -626,6 +628,7 @@ upstream模块提供的变量：
 ```
 
 * Nginx所有变量列表
+
 [Nginx变量列表](http://nginx.org/en/docs/varindex.html)
 
 
