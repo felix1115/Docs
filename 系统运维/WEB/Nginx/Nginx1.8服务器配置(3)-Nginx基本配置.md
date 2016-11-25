@@ -236,6 +236,8 @@ none：表示所有的浏览器都开启keepalive。
 用于server段中。
 指定监听的地址和(或)端口。
 如：listen 80或者是listen 172.17.100.3:80
+
+default_server：将服务器作为默认的服务器。在多虚拟主机环境下有用。
 ```
 
 * server_name

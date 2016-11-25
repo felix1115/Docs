@@ -114,7 +114,7 @@ mysqldb_clear();
 * 编译安装bind9
 ```
 安装依赖软件包：
-[root@vm01 bind-9.10.4-P2]# yum install -y gcc gcc-c++ openssl openssl-devel openss-libs mysql mysql-devel
+[root@vm01 bind-9.10.4-P2]# yum install -y gcc gcc-c++ openssl openssl-devel openssl-libs mysql mysql-devel
 [root@vm01 bind-9.10.4-P2]# ./configure --prefix=/usr/local/source/bind9 --enable-epoll --enable-threads --disable-ipv6 
 [root@vm01 bind-9.10.4-P2]# make
 [root@vm01 bind-9.10.4-P2]# make install
