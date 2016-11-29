@@ -138,5 +138,38 @@ location /health_status {
 ![health_check status](https://github.com/felix1115/Docs/blob/master/Images/nginx_hc-1.png)
 
 
+# ngx_cache_purge模块
+
+[下载地址](http://labs.frickle.com/files/ngx_cache_purge-2.3.tar.gz)
+
+* 编译安装Nginx
+```
+[root@vm03 ~]# tar -zxf ngx_cache_purge-2.3.tar.gz
+[root@vm03 ~]#
+[root@vm03 ~]# cd nginx-1.10.2
+[root@vm03 nginx-1.10.2]# ./configure --prefix=/usr/local/source/nginx --with-http_ssl_module --with-http_stub_status_module --with-google_perftools_module --add-module=../ngx_cache_purge-2.3
+
+```
+
+* 配置示例
+```
+location ~ /purge(/.*) {
+    allow 172.17.100.0/24;
+    deny all;
+    proxy_cache_purge   cache01 $scheme://$host$1$is_args$args;
+}
+
+说明：
+1. purge后面的内容为要删除的URI
+2. proxy_cache_purge后面的cache01为proxy_cache_path所定义的cache名称。
+3. cache01后面的$scheme://$host$1$is_args$args，这个内容为proxy_cache_key所定义的内容，只是将$request_uri换成了$1。
+```
+
+* 测试
+![nginx url purge结果](https://github.com/felix1115/Docs/blob/master/Images/nginx_url_purge.png)
+
+
+
+
 
 

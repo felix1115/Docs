@@ -18,11 +18,11 @@ SHOW=0
 
 help() {
     echo
-    echo "Usage: $0 [-h] | [-s] | -k <url> | -f <url_purge_file>"
+    echo "Usage: $0 [-h] | [-s] | -d <url> | -f <url_purge_file>"
     echo
     echo -e "\t -h: Show help"
     echo -e "\t -s: Show all key in Cache Directory: $NGINX_CACHE_DIR"
-    echo -e "\t -k: Specify one url you want to delete"
+    echo -e "\t -d: Specify one url you want to delete"
     echo -e "\t -f: Specify the uri file name. e.g: $0 -s > /tmp/urls"
     echo
 }
@@ -71,10 +71,10 @@ deleteKeyFromFile() {
 	done < $1
 }
 
-while getopts "k:f:hs" options
+while getopts "d:f:hs" options
 do
     case $options in
-        'k')
+        'd')
             DELURL=$OPTARG
             DEL=1
             ;;
