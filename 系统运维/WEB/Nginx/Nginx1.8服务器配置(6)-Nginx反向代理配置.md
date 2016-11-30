@@ -1,11 +1,11 @@
 # nginx upstream
 * upstream
 ```
-����http���С�
-�﷨��ʽ��upstream <name> { ... }
-���ã�����������顣name�������ָ����
+用于http段中。
+语法格式：upstream <name> { ... }
+作用：定义服务器组。name可以随便指定。
 
-ʾ��:
+示例:
 upstream backend {
     server backend1.example.com weight=5;
     server 127.0.0.1:8080       max_fails=3 fail_timeout=30s;
@@ -17,40 +17,40 @@ upstream backend {
 
 * server
 ```
-����upstream���С�
+用于upstream段中。
 
-�﷨��ʽ��server address [parameters];
-���ã�ָ���������ĵ�ַ�Ͳ�����
-˵����address������IP��ַ��Ҳ�������������Լ�һ����ѡ�Ķ˿ںš��磺server 172.17.100.1:8080�����û��ָ���˿ڣ���Ĭ��Ϊ80�˿ڡ�������������������IP��ַ�����ʾһ�ζ����˶��server��
+语法格式：server address [parameters];
+作用：指定服务器的地址和参数。
+说明：address可以是IP地址，也可以是域名，以及一个可选的端口号。如：server 172.17.100.1:8080。如果没有指定端口，则默认为80端口。如果域名解析出来多个IP地址，则表示一次定义了多个server。
 
-�������£�
-weight=<number>�����÷�������Ȩ�ء�Ĭ��Ϊ1.
-max_conns=<number>�����ƺ�˷�����ͬʱ��������������Ĭ��ֵΪ0����ʾû�����ơ������������û��ʹ�ù����ڴ�(zone)�Ļ��������������ʾ����ÿ��worker���̵����ơ�
-max_fails=<number>��Ĭ��ֵΪ1.��ʾ�������ĳ̨��������fail_timeout��ָ����ʱ���ڳ���max_fails�η���ʧ�ܣ�����fail_timeoutʱ������Ϊ�÷����������á����Ϊ0�����ʾ�رոù��ܡ�����ͨ��ָ��proxy_next_upstream�� fastcgi_next_upstream�� memcached_next_upstream������ʲô��ʧ�ܵĳ��ԡ� Ĭ������ʱ��http_404״̬������Ϊ��ʧ�ܵĳ��ԡ�
-fail_timeout=<time>��Ĭ��Ϊ10s����ʾ�������ڸ�ʱ�����ʧ��max_fails�κ󣬷������������õ�ʱ�䡣
-backup����Ƿ�������Ϊ���ݷ������������е���������������ʱ���Ż�ʹ�ñ��Ϊbackup�ķ�������
-down����Ƿ��������ò����á�
-resolve�����ӷ���������������Ӧ��IP��ַ�ĸı䣬���������������ı�ʱ�������Զ����޸�upstream�����ã�����Ҫ����nginx����Ҫ��http��������resolverָ��������DNS��������
+参数如下：
+weight=<number>：设置服务器的权重。默认为1.
+max_conns=<number>：限制后端服务器同时活动的最大连接数。默认值为0，表示没有限制。如果服务器组没有使用共享内存(zone)的话，则这个参数表示的是每个worker进程的限制。
+max_fails=<number>：默认值为1.表示的是如果某台服务器在fail_timeout所指定的时间内出现max_fails次访问失败，则在fail_timeout时间内认为该服务器不可用。如果为0，则表示关闭该功能。可以通过指令proxy_next_upstream、 fastcgi_next_upstream和 memcached_next_upstream来配置什么是失败的尝试。 默认配置时，http_404状态不被认为是失败的尝试。
+fail_timeout=<time>：默认为10s。表示服务器在该时间段内失败max_fails次后，服务器将不可用的时间。
+backup：标记服务器作为备份服务器。当所有的主服务器不可用时，才会使用标记为backup的服务器。
+down：标记服务器永久不可用。
+resolve：监视服务器的域名所对应的IP地址的改变，当服务器的域名改变时，将会自动的修改upstream的配置，不需要重启nginx。需要在http块中配置resolver指定解析的DNS服务器。
 ```
 
 * zone
 ```
-����upstream���С�1.9.0�汾���á�
-�﷨��ʽ��zone <name> [size]
-���ã����������ڶ��worker����֮�乲�����������Ϣ������״̬��Ϣ�Ĺ����ڴ�����ƺʹ�С����������Թ���ͬһ��zone������������£� ��Ҫһ����ָ���㹻��size��
+用于upstream段中。1.9.0版本可用。
+语法格式：zone <name> [size]
+作用：定义用于在多个worker进程之间共享组的配置信息和运行状态信息的共享内存的名称和大小。几个组可以共享同一个zone，在这种情况下， 需要一次性指定足够的size。
 ```
 
 * keepalive
 ```
-����upstream���С����ڴ�������������˷������ĳ����ӡ�http���е�keepalive��ʾ���ǿͻ��˵�web������֮��ĳ����ӡ�
-�﷨��keepalive <connections>
-���ã�Ϊ�Ӵ�������������˷����������Ӽ���档connections������ʾΪÿһ��worker���̱����ڻ����е������еĵ���˷������������������������ֵ�����������ʹ�õ����ӽ��ᱻ�رա�
+用于upstream段中。用于代理服务器到后端服务器的长连接。http段中的keepalive表示的是客户端到web服务器之间的长连接。
+语法：keepalive <connections>
+作用：为从代理服务器到后端服务器的连接激活缓存。connections参数表示为每一个worker进程保留在缓存中的最大空闲的到后端服务器的连接数。如果超过该值，则最久未使用的连接将会被关闭。
 
-ע�⣺
-1. ����HTTP��������Ӧ������proxy_http_versionΪ1.1�����ҽ�Connectionͷ�ֶ���ա�
-2. ����FastCGI����������Ҫ����fastcgi_keep_connΪon��
+注意：
+1. 对于HTTP服务器，应该设置proxy_http_version为1.1，并且将Connection头字段清空。
+2. 对于FastCGI服务器，需要设置fastcgi_keep_conn为on。
 
-����ʾ��1: HTTP������
+配置示例1: HTTP服务器
 upstream http_backend {
     server 127.0.0.1:8080;
 
@@ -68,7 +68,7 @@ server {
     }
 }
 
-����ʾ��2��FastCGI������
+配置示例2：FastCGI服务器
 upstream fastcgi_backend {
     server 127.0.0.1:9000;
 
@@ -86,99 +86,99 @@ server {
 }
 ```
 
-# ���ؾ����㷨
-* Ĭ����ѯ
+# 负载均衡算法
+* 默认轮询
 ```
-���û��ָ���κθ��ؾ����㷨����Ĭ��Ϊ��ѯ��
-���ݷ����������õ�weight���������󵽺�˷�������
+如果没有指定任何负载均衡算法，则默认为轮询。
+根据服务器所配置的weight，分配请求到后端服务器。
 ```
 
 * ip_hash
 ```
-����upstream���С�
+用于upstream段中。
 
-���ã����ڿͻ���IP��ַ�ķ�ʽ������ַ�����˷������ĸ��ؾ����㷨��IPv4��ַ��ǰ�����ֽڻ�����IPv6��ַ������Ϊhash key��
-˵�������ָ��ؾ����㷨������ȷ������ͬһ���ͻ��˵��������Ǳ��ַ���ͬһ����˷����������Ǻ�˷����������á�����˷�����������ʱ���ͻ��˵����󽫻�ַ���������������
+作用：基于客户端IP地址的方式将请求分发到后端服务器的负载均衡算法。IPv4地址的前三个字节或整个IPv6地址将会作为hash key。
+说明：这种负载均衡算法，可以确保来自同一个客户端的请求总是被分发到同一个后端服务器，除非后端服务器不可用。当后端服务器不可用时，客户端的请求将会分发到其他服务器。
 
-ע�⣺�����Ҫ��ʱ���Ƴ�ĳ̨����������Ҫ�ѷ��������Ϊdown��
+注意：如果需要临时的移除某台服务器，需要把服务器标记为down。
 ```
 
 * least_conn
 ```
-����upstream���С���Ҫnginx�汾��1.3.1�������ϻ�����1.2.2
+用于upstream段中。需要nginx版本在1.3.1及其以上或者是1.2.2
 
-���ã����û�������ַ����������ٻ�������ĺ�˷������ϣ�ͬʱҲ�ῼ�Ƿ�������Ȩ��ֵ������ж�������ķ�������������ü�Ȩ��ѯ�ķ�ʽ��
+作用：将用户的请求分发到具有最少活动连接数的后端服务器上，同时也会考虑服务器的权重值。如果有多个这样的服务器，将会采用加权轮询的方式。
 ```
 
 * least_time
 ```
-����upstream���С���Ҫnginx�汾��1.7.10
-�﷨��ʽ��least_time header | last_byte
-���ã����ͻ��˵������͵���������ƽ����Ӧʱ������ٻ�������ĺ�˷�������ͬʱҲ�ῼ�Ǻ�˷�������Ȩ�ء�����ж�������ķ�������������ü�Ȩ��ѯ�ķ�ʽ��
+用于upstream段中。需要nginx版本在1.7.10
+语法格式：least_time header | last_byte
+作用：将客户端的请求发送到具有最少平均响应时间和最少活动连接数的后端服务器，同时也会考虑后端服务器的权重。如果有多个这样的服务器，将会采用加权轮询的方式。
 
-header����ʾ������Ӧͷ�������ѵ�ʱ�䡣
-last_byte����ʾ����������Ӧ���������ѵ�ʱ�䡣
+header：表示接收响应头的所花费的时间。
+last_byte：表示接收完整响应内容所花费的时间。
 ```
 
 # nginx proxy
 
-> ngx_http_proxy_module������������������������
+> ngx_http_proxy_module允许传递请求到其他服务器。
 
 
 * proxy_bind
 ```
-����http��server��location���С�
-�﷨��proxy_bind <address[:port]> | off
-���ã�ָ���������������ӱ�����������(��˷�����)��ʹ�õĵ�ַ�Ϳ�ѡ�Ķ˿�(��Ҫ1.11.2�汾)��
-off����ʾȡ����ǰһ�����ü���̳е�proxy_bind���ã�������ϵͳ�Զ�����һ�����ص�IP��ַ�Ͷ˿ڡ�
+用于http、server、location段中。
+语法：proxy_bind <address[:port]> | off
+作用：指定代理服务器连接被代理服务器(后端服务器)所使用的地址和可选的端口(需要1.11.2版本)。
+off：表示取消从前一个配置级别继承的proxy_bind配置，并且让系统自动分配一个本地的IP地址和端口。
 ```
 
 * proxy_buffer_size
 ```
-����http��server��location���С�
-Ĭ��ֵ��proxy_buffer_size 4k|8k
-���ã��������ڶ�ȡ�Ӻ�˷������յ�����Ӧ�ĵ�һ���ֵĻ����С���ⲿ��ͨ������һ��С��response header��ͨ����������С����һ���ڴ�ҳ��
+用于http、server、location段中。
+默认值：proxy_buffer_size 4k|8k
+作用：设置用于读取从后端服务器收到的响应的第一部分的缓存大小，这部分通常包括一个小的response header。通常情况这个大小等于一个内存页。
 
-�鿴�ڴ�ҳ��С��getconf PAGESIZE
+查看内存页大小：getconf PAGESIZE
 ```
 
 * proxy_buffering
 ```
-����http��server��location���С�
-Ĭ��ֵ��proxy_buffering on
-���ã��Ƿ�Ժ�˷���������Ӧ���л��档
+用于http、server、location段中。
+默认值：proxy_buffering on
+作用：是否对后端服务器的响应进行缓存。
 
-������ʱ��nginx���ᾡ���ܿ�Ľ��մӺ�˷�������������Ӧ�����ҽ��䱣����proxy_buffer_size��proxy_buffersָ�������õĻ����С�
-���������Ӧ����buffer�Ĵ�С��������һ���ֻᱣ���ڴ����ϵ���ʱ�ļ��С�����ʱ�ļ���proxy_max_temp_file_size��proxy_temp_file_write_sizeָ��塣
+当启用时，nginx将会尽可能快的接收从后端服务器发来的响应，并且将其保存在proxy_buffer_size和proxy_buffers指令所设置的缓存中。
+如果整个响应超过buffer的大小，则它的一部分会保存在磁盘上的临时文件中。该临时文件由proxy_max_temp_file_size和proxy_temp_file_write_size指令定义。
 
-������ã���nginx�յ���Ӧʱ������ͬ�����ͻ���
+如果禁用，当nginx收到响应时会立即同步到客户端
 ```
 
 * proxy_buffers
 ```
-����http��server��location���С�
-Ĭ��ֵ��proxy_buffers 8 4k|8k;
-�﷨��proxy_buffers <number> <size>
-���ã�Ϊÿһ����������number��size��С�Ļ������ڶ�ȡ�Ӻ�˷�������������Ӧ��ͨ��size��СΪһ���ڴ�ҳ��
+用于http、server、location段中。
+默认值：proxy_buffers 8 4k|8k;
+语法：proxy_buffers <number> <size>
+作用：为每一个连接设置number个size大小的缓存用于读取从后端服务器发来的响应。通常size大小为一个内存页。
 ```
 
 * proxy_busy_buffers_size
 ```
-����http��server��location���С�
-Ĭ��ֵ��proxy_busy_buffers_size 8k|16k
-���ã�������proxy_bufferingʱ����û�ж���ȫ����Ӧ������£�д���嵽��һ����Сʱ��nginxһ������ͻ��˷�����Ӧ��ֱ������С�ڴ�ֵ������ָ���������ô�ֵ�� ͬʱ��ʣ��Ļ������������ڽ�����Ӧ�������Ҫ��һ�������ݽ����嵽��ʱ�ļ����ô�СĬ����proxy_buffer_size��proxy_buffersָ�����õ��黺���С��������
+用于http、server、location段中。
+默认值：proxy_busy_buffers_size 8k|16k
+作用：当启用proxy_buffering时，在没有读到全部响应的情况下，写缓冲到达一定大小时，nginx一定会向客户端发送响应，直到缓冲小于此值。这条指令用来设置此值。 同时，剩余的缓冲区可以用于接收响应，如果需要，一部分内容将缓冲到临时文件。该大小默认是proxy_buffer_size和proxy_buffers指令设置单块缓冲大小的两倍。
 ```
 
 * proxy_temp_file_write_size
 ```
-Ĭ��ֵ��proxy_temp_file_write_size 8k|16k
-���ã�ָ��һ�ο���д�뵽��ʱ�ļ������ݴ�С��
+默认值：proxy_temp_file_write_size 8k|16k
+作用：指定一次可以写入到临时文件的数据大小。
 ```
 
 * proxy_max_temp_file_size
 ```
-Ĭ��ֵ��proxy_max_temp_file_size 1024m;
-���ã���proxy_buffering����Ϊonʱ��������Ӧ�Ĵ�С����proxy_buffer_size��proxy_buffers�Ĵ�С������Ӧ��һ���ֻᱻ���浽��ʱ�ļ��У����ָ����������ʱ�ļ�������С��
+默认值：proxy_max_temp_file_size 1024m;
+作用：当proxy_buffering设置为on时，整个响应的大小大于proxy_buffer_size和proxy_buffers的大小，则响应的一部分会被保存到临时文件中，这个指令是设置临时文件的最大大小。
 ```
 
 * proxy_temp_path
@@ -186,172 +186,172 @@ off����ʾȡ����ǰһ�����ü���̳е�proxy_bind���ã�������ϵͳ�Զ�����һ�����ص�I
 Syntax: proxy_temp_path path [level1 [level2 [level3]]];
 Default: proxy_temp_path proxy_temp;
 
-���ã�ָ��һ��Ŀ¼���ڴ洢�Ӻ�˷��������յ���ʱ�����ļ���
+作用：指定一个目录用于存储从后端服务器接收的临时数据文件。
 ```
 
 * proxy_connect_timeout
 ```
-Ĭ��ֵ��proxy_connect_timeout 60s;
-���ã������������ͺ�˷������������ӵĳ�ʱʱ�䡣���ܳ���75s��
+默认值：proxy_connect_timeout 60s;
+作用：代理服务器和后端服务器建立连接的超时时间。不能超过75s。
 ```
 
 * proxy_http_version
 ```
-Ĭ��ֵ��proxy_http_version 1.0
-���ã����ô���ʱ����ʹ�õ�HTTPЭ��汾��Ĭ����1.0����ʹ��keepaliveʱ���Ƽ���1.1
+默认值：proxy_http_version 1.0
+作用：设置代理时，所使用的HTTP协议版本。默认是1.0，当使用keepalive时，推荐用1.1
 ```
 
 * proxy_ignore_client_abort
 ```
-Ĭ��ֵ��off
-���ã����ͻ��������ر�����ʱ�������������ͺ�˷������������Ƿ�Ӧ�ùرա�
+默认值：off
+作用：当客户端主动关闭连接时，代理服务器和后端服务器的连接是否应该关闭。
 
-��ʱ���������������ͻ��˶������ر�������߿ͻ�������ϵ�����ô Nginx ���¼ 499��ͬʱ request_time �� ������Ѿ���������ʱ�䣬�� upstream_response_time Ϊ "-"
+此时在请求过程中如果客户端端主动关闭请求或者客户端网络断掉，那么 Nginx 会记录 499，同时 request_time 是 「后端已经处理」的时间，而 upstream_response_time 为 "-"
 
-���ʹ���� proxy_ignore_client_abort on ;��ô�ͻ��������ϵ�����֮��Nginx ��ȴ���˴�����(���߳�ʱ)��Ȼ���¼ [��˵ķ�����Ϣ������־�����������˷���200���ͼ�¼ 200�������˷���5XX ����ô�ͼ�¼5XX ��
-�����ʱ(Ĭ��60s�������� proxy_read_timeout ����)��Nginx�������Ͽ����ӣ���¼504��
+如果使用了 proxy_ignore_client_abort on ;那么客户端主动断掉连接之后，Nginx 会等待后端处理完(或者超时)，然后记录 [后端的返回信息」到日志。所以如果后端返回200，就记录 200，如果后端返回5XX ，那么就记录5XX 。
+如果超时(默认60s，可以用 proxy_read_timeout 设置)，Nginx会主动断开连接，记录504。
 ```
 
 * proxy_ignore_headers 
 ```
-����http��server��location���С�
-�﷨��proxy_ignore_headers <field> ...;
-���ã����ԴӺ�˷��������ݹ�����ĳЩ�ֶΡ��������Щ�ֶο��Ա����ԣ�
-    X-Accel-Redirect��X-Accel-Expires��X-Accel-Limit-Rate��Z-Accel-Buffering
-    X-Accel-Charset��Expires��Cache-Control��Set-Cookie��Vary
+用于http、server、location段中。
+语法：proxy_ignore_headers <field> ...;
+作用：忽略从后端服务器传递过来的某些字段。下面的这些字段可以被忽略：
+    X-Accel-Redirect、X-Accel-Expires、X-Accel-Limit-Rate、Z-Accel-Buffering
+    X-Accel-Charset、Expires、Cache-Control、Set-Cookie、Vary
 ```
 
 * proxy_hide_header
 ```
-�﷨��ʽ��proxy_hide_header <field>
-���ã�Ĭ������£�Nginx���Ὣ�Ӻ�˷��������ݹ�������Ӧͷ�а���"Date"/"Server"/"X-Pad"/"X-Accel-..."���ֶδ��ݵ��ͻ��ˡ�
+语法格式：proxy_hide_header <field>
+作用：默认情况下，Nginx不会将从后端服务器传递过来的响应头中包含"Date"/"Server"/"X-Pad"/"X-Accel-..."的字段传递到客户端。
 
-��ָ����������һЩ�������ӵ��ֶΣ����ָ�����ֶν����ᴫ�ݵ��ͻ��ˡ�
+该指令用于设置一些其他附加的字段，这个指定的字段将不会传递到客户端。
 ```
 
 * proxy_intercept_errors
 ```
-Ĭ��ֵ��proxy_intercept_errors off;
-���ã�����˷���������Ӧ״̬����ڻ����300ʱ���Ƿ��䴫�ݵ��ͻ��˻�����Nginx�����������������ز�ʹ��error_page���д�����
+默认值：proxy_intercept_errors off;
+作用：当后端服务器的响应状态吗大于或等于300时，是否将其传递到客户端或者是Nginx代理服务器将其拦截并使用error_page进行处理。
 
-on������Ӧ״̬����ڻ����300ʱ���������ء�ʹ��nginx��error_page���д�����һ��Ҫ����error_page��
-off�����������ء�ֱ����ʾ���ͻ��ˡ�
+on：当响应状态码大于或等于300时，进行拦截。使用nginx的error_page进行处理。一定要配置error_page。
+off：不进行拦截。直接显示到客户端。
 ```
 
 * proxy_next_upstream
 ```
-�﷨��ʽ��proxy_next_upstream error | timeout | invalid_header | http_500 | http_502 | http_503 | http_504 | http_403 | http_404 | non_idempotent | off ...;
-Ĭ��ֵ��proxy_next_upstream error timeout;
+语法格式：proxy_next_upstream error | timeout | invalid_header | http_500 | http_502 | http_503 | http_504 | http_403 | http_404 | non_idempotent | off ...;
+默认值：proxy_next_upstream error timeout;
 
-���ã�ָ����ʲô����£��ŻὫ����ת������һ̨��������
+作用：指定在什么情况下，才会将请求转发到下一台服务器。
 
-error��ָ���� �ͺ�˷������������Ӵ��󡢷������󵽺�˷��������ִ��󡢴Ӻ�˷�������ȡresponse header��������
-timeout��ָ���� �ͺ�˷������������ӳ�ʱ���������󵽺�˷��������ֳ�ʱ���Ӻ�˷�������ȡresponse header���ֳ�ʱ
-invalid_header����˷���������һ���յĻ�������Ч����Ӧ��
-http_500����˷�����������500����Ӧ״̬�롣
-http_502����˷�����������502����Ӧ״̬�롣
-http_503����˷�����������503����Ӧ״̬�롣
-http_504����˷�����������504����Ӧ״̬�롣
-http_403����˷�����������403����Ӧ״̬�롣
-http_404����˷�����������404����Ӧ״̬�롣
-non_idempotent��ͨ������£���һ��������÷��ݵȵķ�ʽ(POST/LOCK/PATCH)�Ѿ����͵���˷������Ļ���������ݵȵ����󲻻ᴫ�ݵ������ĺ�˷����������������ѡ��󣬽�����ȷ�ĸ���NginxҪ�����������
-off�����Ὣ������һ̨��˷�������
+error：指的是 和后端服务器建立连接错误、发送请求到后端服务器出现错误、从后端服务器读取response header发生错误
+timeout：指的是 和后端服务器建立连接超时、发送请求到后端服务器出现超时、从后端服务器读取response header出现超时
+invalid_header：后端服务器返回一个空的或者是无效的响应。
+http_500：后端服务器返回了500的响应状态码。
+http_502：后端服务器返回了502的响应状态码。
+http_503：后端服务器返回了503的响应状态码。
+http_504：后端服务器返回了504的响应状态码。
+http_403：后端服务器返回了403的响应状态码。
+http_404：后端服务器返回了404的响应状态码。
+non_idempotent：通常情况下，当一个请求采用非幂等的方式(POST/LOCK/PATCH)已经发送到后端服务器的话，这个非幂等的请求不会传递到其他的后端服务器，当启用这个选项后，将会明确的告诉Nginx要重试这个请求。
+off：不会将请求到下一台后端服务器。
 
 
-ע�⣺����������һ̨�����������������ڻ�û����ͻ��˷����κ���Ӧ������ڷ�����Ӧ�ڼ����error��timeout���򴫵�������һ̨�������ǲ����ܵġ�
+注意：传递请求到下一台服务器，仅仅发生在还没有向客户端发送任何响应。如果在发送响应期间出现error或timeout，则传递请求到下一台服务器是不可能的。
 ```
 
 * proxy_pass
 ```
-����location��if in location��limit_except����
-�﷨��ʽ��proxy_pass <URL>
+用于location、if in location和limit_except段中
+语法格式：proxy_pass <URL>
 
-���ã�����locationӳ�䵽�ĺ�˷�������Э�顢��ַ�Լ�һ����ѡ��URI����ַ������������IP��ַ�Լ�һ����ѡ�Ķ˿ڡ�
-�磺proxy_pass http://localhost:8000/uri/;
+作用：设置location映射到的后端服务器的协议、地址以及一个可选的URI。地址可以是域名、IP地址以及一个可选的端口。
+如：proxy_pass http://localhost:8000/uri/;
 
-1. ���proxy_passָ��ָ����URI��������ת�����˷�����ʱ����locationƥ�䵽�������URI���ᱻproxy_passָ�����ָ����URI�����滻��
-    ʾ�������û����ʵ���URI��nameʱ��������ʾ127.0.0.1/remote/�µ����ݡ���ַ���в�������ʾ��
+1. 如果proxy_pass指令指定了URI，当请求转发到此服务器时，被location匹配到的请求的URI将会被proxy_pass指令后所指定的URI进行替换。
+    示例：当用户访问的是URI是name时，将会显示127.0.0.1/remote/下的内容。地址栏中不会有显示。
     location /name/ {
         proxy_pass http://127.0.0.1/remote/;
     }
 
-2. ���proxy_passָ�����û��ָ��URI����������Կͻ��˷��͵���ʽ���͵���˷�������
+2. 如果proxy_pass指令后面没有指定URI，则请求会以客户端发送的形式发送到后端服务器。
 
-3. ��locationʹ���������ʽָ��ʱ��proxy_passָ����治Ҫʹ��URI��
+3. 当location使用正则表达式指定时，proxy_pass指令后面不要使用URI。
 
-ʾ��1��
+示例1：
 location /test/ {
     proxy_pass http://172.17.100.1;
 }
-˵�������û����ʵ���/test/index.htmlʱ����������������ض���http://172.17.100.1/test/index.html
+说明：当用户访问的是/test/index.html时，则代理服务器会重定向到http://172.17.100.1/test/index.html
 
-ʾ��2��
+示例2：
 location /test/ {
     proxy_pass http://172.17.100.1/;
 }
-˵�������û����ʵ���/test/index.htmlʱ����������������ض���http://172.17.100.1/index.html
+说明：当用户访问的是/test/index.html时，则代理服务器会重定向到http://172.17.100.1/index.html
 
-����ʾ����˵���ˣ�proxy_passָ������û������URI������
+以上示例就说明了，proxy_pass指令中有没有增加URI的区别。
 
 ```
 
 * proxy_pass_request_body
 ```
-Ĭ��ֵ��on
-���ã��Ƿ�ԭʼ�������崫�ݵ���˷�������
+默认值：on
+作用：是否将原始的请求体传递到后端服务器。
 ```
 
 * proxy_pass_request_headers
 ```
-Ĭ��ֵ��on
-���ã��Ƿ�ԭʼ�����е�����ͷ���ݵ���˷�������
+默认值：on
+作用：是否将原始请求中的请求头传递到后端服务器。
 ```
 
 * proxy_read_timeout
 ```
-Ĭ��ֵ��proxy_read_timeout 60s;
-���ã��Ӻ�˷�������ȡ��Ӧ�ĳ�ʱʱ�䡣���ʱ����ָ���������Ķ�����֮���ʱ�䣬�����Ǵ���������Ӧ�ĳ�ʱʱ�䡣
-��������ʱ����ڣ���˷�����û�д����κ����ݣ����ӽ���رա�
+默认值：proxy_read_timeout 60s;
+作用：从后端服务器读取响应的超时时间。这个时间是指两个连续的读操作之间的时间，而不是传输整个响应的超时时间。
+如果在这个时间段内，后端服务器没有传输任何内容，连接将会关闭。
 ```
 * proxy_send_timeout
 ```
-Ĭ��ֵ: proxy_send_timeout 60s;
-���ã������������������󵽺�˷������ĳ�ʱʱ�䡣�����˷������ڸ�ʱ�����û���յ��κ����ݣ����ر����ӡ�
+默认值: proxy_send_timeout 60s;
+作用：代理服务器发送请求到后端服务器的超时时间。如果后端服务器在该时间段内没有收到任何内容，将关闭连接。
 ```
 
 * proxy_set_header
 ```
-�﷨��ʽ��proxy_set_header field value;
-���ã������ڷ��͵���˷�����������ͷ�����¶�����������ֶΡ�
-value���԰����ı����������������ߵ���ϡ�
-���valueΪ�յ��ַ���������ֶβ��ᴫ�ݵ���˷��������磺proxy_set_header Accept-Encoding "";
+语法格式：proxy_set_header field value;
+作用：允许在发送到后端服务器的请求头中重新定义或者增加字段。
+value可以包含文本、变量或者是两者的组合。
+如果value为空的字符串，则该字段不会传递到后端服务器。如：proxy_set_header Accept-Encoding "";
 ```
 
 * proxy_redirect
 ```
-�﷨��ʽ��
+语法格式：
     proxy_redirect default;
     proxy_redirect off;
     proxy_redirect <redirect> <replacement>;
-Ĭ��ֵ:    
+默认值:    
     proxy_redirect default;
 
-���ã�Nginx�����������Ժ�˷�������������Ӧͷ�е�Location�ֶκ�Refresh�ֶν����޸ġ�Location�ֶκ�Refresh�ֶο����ÿͻ�������һ���µ�URL��
+作用：Nginx代理服务器对后端服务器发来的响应头中的Location字段和Refresh字段进行修改。Location字段和Refresh字段可以让客户端请求一个新的URL。
 
-off����ʾȡ����ǰ�ȼ�������proxy_redirectָ�
-default����ʾ��proxy_pass��location��ͬ���replacement������proxy_pass�в���ʹ�ñ���������Ļ�����ʹ��default��
+off：表示取消当前等级的所有proxy_redirect指令。
+default：表示由proxy_pass和location共同组成replacement。但是proxy_pass中不能使用变量，否则的话不能使用default。
 
-ʾ��1��
-����������������ص���Ӧͷ�ֶε�Location��http://localhost:8000/two/some/uri/
-��proxy_redirect http://localhost:8000/two/ http://frontend/one/;
-����Ѹ��ַ�����дΪ��Location:http://frontend/one/some/uri
+示例1：
+假设代理服务器返回的响应头字段的Location：http://localhost:8000/two/some/uri/
+则：proxy_redirect http://localhost:8000/two/ http://frontend/one/;
+将会把该字符串重写为：Location:http://frontend/one/some/uri
 
-ʾ��2����replacement��server nameʡ��
+示例2：将replacement中server name省略
 proxy_redirect http://localhost:8000/two/ /;
-���ͣ����ֽ�������������ĵ�ַ�Ͷ˿���Ϊ�����ĵ�ַ�Ͷ˿ڡ�
+解释：这种将会把主服务器的地址和端口作为替代后的地址和端口。
 
-ʾ��3��default
-��������location�ǵȼ۵ġ�
+示例3：default
+下面两个location是等价的。
 
 location /one/ {
     proxy_pass     http://upstream:port/two/;
@@ -363,21 +363,21 @@ location /one/ {
     proxy_redirect http://upstream:port/two/ /one/;
 }
 
-ʾ��4��redirect��replacement�ж�����ʹ�ñ�����
+示例4：redirect和replacement中都可以使用变量。
 proxy_redirect http://localhost:8000/ http://$host:$server_port/;
 proxy_redirect http://$proxy_host:8000/ /;
 
-ʾ��5��redirect��ʹ���������ʽ��
-~����ʾ���ִ�Сд��
-~*����ʾ�����ִ�Сд��
+示例5：redirect中使用正则表达式。
+~：表示区分大小写。
+~*：表示不区分大小写。
 
 proxy_redirect ~^(http://[^:]+):\d+(/.+)$ $1$2;
 proxy_redirect ~*/user/([^/]+)/(.+)$      http://$1.example.com/$2;
 ```
 
-* ����
+* 变量
 ```
-1. $proxy_host��proxy_passָ����ָ���ĺ�˷������ĵ�ַ��
-2. $proxy_port��proxy_passָ����ָ��ĺ�˷������Ķ˿ڻ�����Э���Ĭ�϶˿ڡ�
-3. $proxy_add_x_forwarded_for������ͻ��˵�����ͷ�д���X-Forwarded-For�ֶΣ����µ�X-Forwarded-For�ֶ�ֵΪ��ԭ�е�X-Forwarded-For�ֶε�ֵ��$remote_addr��ֵ��ϣ�����֮��ʹ�ö��ŷָ�������ͻ��˵�����ͷ��û��X-Forwarded-For�ֶΣ���$proxy_add_x_forwarded_for��ͬ��$remote_addr��
+1. $proxy_host：proxy_pass指令中指定的后端服务器的地址。
+2. $proxy_port：proxy_pass指令中指令的后端服务器的端口或者是协议的默认端口。
+3. $proxy_add_x_forwarded_for：如果客户端的请求头中存在X-Forwarded-For字段，则新的X-Forwarded-For字段值为：原有的X-Forwarded-For字段的值和$remote_addr的值结合，他们之间使用逗号分隔。如果客户端的请求头中没有X-Forwarded-For字段，则$proxy_add_x_forwarded_for等同于$remote_addr。
 ```
