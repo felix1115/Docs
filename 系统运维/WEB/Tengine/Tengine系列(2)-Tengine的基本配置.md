@@ -376,3 +376,45 @@ http {
 格式：http://www.felix.com/test.html?http_trim=off
 ```
 
+# headers模块
+* 说明
+```
+1. 该模块在nginx的expires的基础上，增加了expires_by_types指令，用于根据Content-Type字段来设置过期时间。
+2. 在nginx中，如果要根据不同的内容类型设置过期时间的话，需要使用location对指定的文件进行正则表达式匹配。
+```
+
+* expires_by_types
+```
+用于http、server和location段中。
+语法：expires_by_types [[modified] time | @time-of-day | epoch | max | off] content-type1 [content-type2] [content-type3] ...
+作用：根据Content-Type字段对指定的文件设置过期时间。
+
+注意：在即配置了expires和expires_by_types的情况下，规则如下
+1. 在同一级别中，如果同时出现expires和expires_by_types时，出现在expires_by_type中的Content-Type会优先选择expires_by_types中配置的，而没有出现在Content-Type中的，会选择expires中的配置。
+2. 当本级别与上一级别都没有配置expires off时，当本级别没有配置expires与expires_by_types时，分别继承上一级别的配置信息，然后在按照规则1执行。
+3. 当本级别配置了expires off时，此时模块会忽略expires_by_types的所有配置，并禁用expires。
+4. 当本级别没有配置expires时，而上一级别有配置expires off时，本级别的expires_by_types将不受上一级别的expires的影响。
+```
+
+# 一致性hash模块
+* 说明
+```
+1. 该模块使用一致性hash作为负载均衡算法。
+2. 该模块使用客户端信息，如$ip/$uri,$args等变量作为参数，使用一致性hash算法将客户端映射到后端机器。
+3. 如果后端机器宕机，请求会被迁移到其他机器。
+4. server的id字段，如果配置了id字段，则使用id字段作为server标识，否则使用server ip和端口作为server标识。使用id字段可以减低增减服务器时hash的波动。
+```
+
+* consistent_hash
+```
+用于upstream段中。
+语法：consistent_hash <variable_name>
+作用：配置upstream采用一致性hash作为负载均衡算法，并使用配置的变量名作为hash输入。
+
+示例：
+upstream www {
+    consistent_hash $remote_addr;
+    server 172.17.100.1 id=1001 weight=10;
+    server 172.17.100.2 id=1002 weight=20;
+}
+```
