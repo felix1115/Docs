@@ -69,7 +69,7 @@ off：不使用时间缓存，$request_time，$request_time_msec，$request_time
 作用：在错误页面是否显示服务器信息。如果开启，会显示URL、服务器名称和出错时间，如果启用了server_admin，则还会显示server_admin的信息。
 ```
 
-![server_info](https://github.com/felix1115/Docs/blob/master/tengine-1.png)
+![server_info](https://github.com/felix1115/Docs/blob/master/Images/tengine-1.png)
 
 * server_tag
 ```
