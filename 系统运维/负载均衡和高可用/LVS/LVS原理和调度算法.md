@@ -153,3 +153,20 @@ DIP：目标IP地址。
 ```
 
 # LVS调度算法
+```
+固定调度算法：按照某种既定的算法，不考虑实时的连接数予以分配。
+1. Round-robin(RR)轮询：当新请求到达时候，按照1:1的比例将请求分配到后端可用的Real Server。
+2. Weighted round-robin(WRR)加权轮询：给每台Real Server分配一个权重，权重越大，分到的请求数越多。
+3. Destination hashing(DH)目标地址散列：根据请求的目标IP地址作为hask key，访问同一个目标地址，将分配同一个Real server。
+4. Source hashing(SH)源地址散列：根据源地址(客户端地址)作为hask key，来自同一个客户端的地址，将会分配到同一个Real Server，除非该RS不可用。
+
+动态调度算法：通过检查服务器上当前连接的活动状态来重新决定下一步调度方式该如何实现。
+5. Lease Connection(LC)最少连接：哪一个Real Server上的连接数少就将下一个连接请求定向到那台Real Server上去。 【算法：连接数=活动连接数*256+非活动连接数】
+6. Weight Least-Connection(WLC)加权最少连接：在最少连接的基础上给每台Real Server分配一个权重。 【
+【算法：连接数=（活动连接数*256+非活动连接数）÷权重】 一种比较理想的算法。
+7. Shortest Expected Delay (SED)  最短期望延迟：不再考虑非活动连接数。
+【算法：连接数=(活动连接数+1) *256 ÷权重】
+8. Never Queue (NQ) 永不排队算法：对SED的改进，当新请求过来的时候不仅要取决于SED算法所得到的值，还要取决于Real Server上是否有活动连接。
+9. Locality-Based Least-Connection  (LBLC) 基于本地状态的最少连接：在DH算法的基础上还要考虑服务器上的活动连接数。
+10. Locality-Based Least-Connection  with  Replication  Scheduling  (LBLCR) 带复制的基于本地的最少连接：LBLC算法的改进
+```
