@@ -1,4 +1,4 @@
-#!/bin/env python
+#!/usr/bin/env python
 # coding: utf-8
 # Author: felix
 # E-mail: 573713035@qq.com
