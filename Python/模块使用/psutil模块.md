@@ -232,3 +232,53 @@ root     pts/2      2016-12-09 10:31:28  172.17.100.254
 ```
 
 # Network
+* 获取接口的IP地址和MAC地址
+```
+#!/usr/bin/env python
+# coding: utf-8
+
+import psutil
+import socket
+
+af_net = {
+    socket.AF_INET: 'IPv4',
+    socket.AF_INET6: 'IPv6',
+    psutil.AF_LINK: 'MAC'
+}
+
+
+def interface_info(interface):
+    interface_dict = psutil.net_if_addrs()
+    for addr in interface_dict[interface]:
+        if af_net.get(addr.family) == 'IPv4':
+            print "\t%-12s: %s" % ('IPv4 Address', addr.address)
+            print "\t%-12s: %s" % ('IPv4 Netmask', addr.netmask)
+        elif af_net.get(addr.family) == 'MAC':
+            print "\t%-12s: %s" % ('MAC Address', addr.address)
+
+
+if __name__ == '__main__':
+    for interface in psutil.net_if_addrs():
+        print '%s:' % interface
+        interface_info(interface)
+        print
+
+
+执行结果：
+[root@vm01 psutil]# ./ifconfig.py
+lo:
+    IPv4 Address: 127.0.0.1
+    IPv4 Netmask: 255.0.0.0
+    MAC Address : 00:00:00:00:00:00
+
+eth0:1:
+    IPv4 Address: 172.17.100.200
+    IPv4 Netmask: 255.255.255.128
+
+eth0:
+    IPv4 Address: 172.17.100.1
+    IPv4 Netmask: 255.255.255.0
+    MAC Address : 00:0c:29:e9:ec:d0
+
+[root@vm01 psutil]#
+```
