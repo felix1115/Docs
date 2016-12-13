@@ -1,11 +1,15 @@
-# LVS-NAT
+# LVS-NAT模式
 * 拓扑图
+
 ![LVS-NAT](https://github.com/felix1115/Docs/blob/master/Images/lvs01.png)
 
 备注：VIP为172.17.100.100
 
 * 防火墙配置
 ```
+1. 作用：将所有去往192.168.100.253的80端口都转换成VIP(172.17.100.100)的80端口。
+2. 对防火墙开启数据包转发功能。
+
 [root@fw ~]# iptables -t nat -A PREROUTING -i eth1 -p tcp -d 192.168.100.253 --dport 80 -j DNAT --to-dest 172.17.100.100:80
 [root@fw ~]#
 [root@fw ~]# cat /proc/sys/net/ipv4/ip_forward
