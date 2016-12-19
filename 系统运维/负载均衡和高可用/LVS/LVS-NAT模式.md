@@ -58,7 +58,7 @@ Kernel IP routing table
 Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
 172.17.100.0    0.0.0.0         255.255.255.0   U     0      0        0 eth0
 169.254.0.0     0.0.0.0         255.255.0.0     U     1002   0        0 eth0
-0.0.0.0         172.17.100.100  0.0.0.0         UG    0      0        0 eth0
+0.0.0.0         172.17.100.5  0.0.0.0         UG    0      0        0 eth0
 [root@vm01 bind]#
 
 ```
@@ -155,7 +155,7 @@ eth0:1    Link encap:Ethernet  HWaddr 00:0C:29:95:75:79
 Kernel IP routing table
 Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
 169.254.0.0     0.0.0.0         255.255.0.0     U     1002   0        0 eth0
-0.0.0.0         172.17.100.100  0.0.0.0         UG    0      0        0 eth0
+0.0.0.0         172.17.100.5  0.0.0.0         UG    0      0        0 eth0
 [root@vm01 conf]#
 ```
 

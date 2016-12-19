@@ -94,14 +94,23 @@ DIP：目标IP地址。
 * 注意事项
 ```
 1. Director和Real Server必须位于同一网段。
-2. 所有的Real Server的网关地址必须指向Director的IP地址。
+2. 所有的Real Server的网关地址必须指向Director的地址。
 3. Director可以重定向端口，既前端使用标准端口，后端使用非标准端口。
 4. 所有进出的流量都要经过Director，Director的压力较大，可能成为瓶颈。一般来说，最多10个Real Server
 5. 一般情况下，Real Server的IP地址为私网地址，只用于集群内部节点之间通信。
 6. 后端的Real Server的操作没有限制。
 
 注意：
-RIP和DIP(目标IP地址)不能位于同一网段，如果同一网段，则不成功。如果经过防火墙或路由器做NAT，则可以。
+1. RIP和DIP(客户端访问的目标IP地址)不能位于同一网段，如果同一网段，则不成功。如果经过防火墙或路由器做NAT，则可以。
+2. 如果有问题，需要在Director上面关闭发送ICMP重定向的功能。否则，在客户端响应的时候，可能直接会走真实的网关地址。
+[root@vm05 conf]# echo 0 > /proc/sys/net/ipv4/conf/default/send_redirects
+[root@vm05 conf]# echo 0 > /proc/sys/net/ipv4/conf/all/send_redirects
+[root@vm05 conf]# echo 0 > /proc/sys/net/ipv4/conf/eth0/send_redirects
+[root@vm05 conf]#
+
+3. 如果是同一网段做测试，则需要删除网络路由
+[root@vm02 ~]# route del -net 172.17.100.0 netmask 255.255.255.0 dev eth0
+[root@vm02 ~]#
 ```
 
 ## LVS-DR
