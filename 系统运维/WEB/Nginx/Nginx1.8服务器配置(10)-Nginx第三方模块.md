@@ -169,6 +169,65 @@ location ~ /purge(/.*) {
 ![nginx url purge结果](https://github.com/felix1115/Docs/blob/master/Images/nginx_url_purge.png)
 
 
+# ngx-fancyindex模块
+* 介绍
+```
+该模块主要是替代Nginx自带的autoindex模块，美化autoindex的输出。
+
+Github地址：https://github.com/aperezdc/ngx-fancyindex
+```
+
+* 解压ngx-fancyindex
+```
+[root@vm01 nginx]# unzip ngx-fancyindex-master.zip
+```
+
+* 重新编译Nginx
+```
+[root@vm01 nginx-1.10.2]# ./configure --prefix=/usr/local/source/nginx --with-http_ssl_module --with-http_realip_module --with-http_stub_status_module --with-google_perftools_module --add-module=/software/nginx/ngx-fancyindex-master
+[root@vm01 nginx-1.10.2]# make
+[root@vm01 nginx-1.10.2]# make install
+```
+
+* 配置参数
+```
+参数用于：http、server和location段中。
+
+fancyindex on|off：启用或禁用fancy directory index功能。默认是off
+fancyindex_default_sort [name|size|date|name_desc|size_desc|data_desc]：定义默认的排序标准。默认是name
+fancyindex_directories_first on|off：默认是on。目录在文件之前显示，并且目录是排序的。
+fancyindex_css_href <uri>：使用外置的CSS替代内置的CSS样式。注意：该uri为root所指定的目录下的文件名。如root为/software，则fancyindex_css_href "/style.css".
+fancyindex_exact_size on|off：默认是on。on表示显示实际大小，off表示用人类可读的方式显示，如KB/MB/GB等。
+fancyindex_name_length <lenght>：默认是50字节。定义文件名长度的最大限制为多少字节。
+fancyindex_footer <path>：默认是空。指定要在目录列表末尾插入的文件名，并显示里面的内容。需要ngx_http_addition_module。
+fancyindex_header <path>: 默认是空。指定要在目录列表开头插入的文件名，并显示里面的内容。需要ngx_http_addition_module。
+fancyindex_show_path on|off：默认是on。只有自定义了fancyindex_header才能设置为off。
+fancyindex_ignore：指定要忽略的文件的列表。支持正则表达式。
+fancyindex_hide_symlinks on|off：默认是off。是否忽略符号链接。
+fancyindex_localtime on|off：默认是off。是否使用当地时间显示文件的创建时间。off表示显示GMT时间(比北京时间慢8个小时)
+fancyindex_time_format <string>：时间显示格式。默认是"%Y-%b-%d %H:%M"
+```
+
+* 配置示例
+```
+server {
+    listen 80;
+    server_name download.felix.com;
+
+    access_log off;
+
+    location / {
+        root /software;
+        fancyindex on;
+        fancyindex_css_href "/style.css";
+        fancyindex_ignore "style.css";
+        fancyindex_default_sort name;
+        fancyindex_exact_size off;
+        fancyindex_localtime on;
+        fancyindex_time_format "%F %T";
+    }
+}
+```
 
 
 
